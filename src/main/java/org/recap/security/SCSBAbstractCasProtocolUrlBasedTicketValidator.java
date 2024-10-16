@@ -1,5 +1,6 @@
 package org.recap.security;
 
+import lombok.extern.slf4j.Slf4j;
 import org.jasig.cas.client.util.CommonUtils;
 
 import java.net.URL;
@@ -7,6 +8,7 @@ import java.net.URL;
 /**
  * Created by sheiks on 25/01/17.
  */
+@Slf4j
 public abstract class SCSBAbstractCasProtocolUrlBasedTicketValidator extends SCSBAbstractUrlBasedTicketValidator {
 
     /**
@@ -26,6 +28,9 @@ public abstract class SCSBAbstractCasProtocolUrlBasedTicketValidator extends SCS
      * @return the response from the CAS server.
      */
     protected final String retrieveResponseFromServer(final URL validationUrl, final String ticket) {
+        log.info("validationUrl >>>>>>> " + validationUrl);
+        log.info("getURLConnectionFactory() >>>>>>> " + getURLConnectionFactory());
+        log.info("getEncoding() >>>>>>> " + getEncoding());
         return CommonUtils.getResponseFromServer(validationUrl, getURLConnectionFactory(), getEncoding());
     }
 }

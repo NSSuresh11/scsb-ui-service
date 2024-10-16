@@ -195,7 +195,7 @@ public class SCSBExceptionTranslationFilter extends GenericFilterBean {
         // existing Authentication is no longer considered valid
         SecurityContextHolder.getContext().setAuthentication(null);
         requestCache.saveRequest(request, response);
-        logger.debug("Calling Authentication entry point.");
+        logger.info("Calling Authentication entry point.");
         String institution = HelperUtil.getInstitutionFromRequest(request);
         if (StringUtils.isNotBlank(institution)) {
             String authType = HelperUtil.getBean(PropertyUtil.class).getPropertyByInstitutionAndKey(institution, PropertyKeyConstants.ILS.ILS_AUTH_TYPE);

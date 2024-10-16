@@ -58,6 +58,7 @@ public class SCSBCas20ServiceTicketValidator extends SCSBAbstractCasProtocolUrlB
      * @param urlParameters the Map containing the existing parameters to send to the server.
      */
     protected final void populateUrlAttributeMap(final Map<String, String> urlParameters) {
+        log.info("this.proxyCallbackUrl >>>>>>> " + this.proxyCallbackUrl);
         urlParameters.put("pgtUrl", this.proxyCallbackUrl);
     }
 

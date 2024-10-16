@@ -127,10 +127,11 @@ public abstract class SCSBAbstractUrlBasedTicketValidator implements TicketValid
                 buffer.append(key);
                 buffer.append("=");
                 final String encodedValue = encodeUrl(value);
+                log.info("encodedValue >>>>> " + encodedValue);
                 buffer.append(encodedValue);
             }
         }
-
+        log.info("buffer.toString() >>>>>>>> " + buffer.toString());
         return buffer.toString();
 
     }
@@ -142,6 +143,7 @@ public abstract class SCSBAbstractUrlBasedTicketValidator implements TicketValid
      * @return the encoded url, or the original url if "UTF-8" character encoding could not be found.
      */
     protected final String encodeUrl(final String url) {
+        log.info("url >>>>> " + url);
         if (url == null) {
             return null;
         }
@@ -180,7 +182,7 @@ public abstract class SCSBAbstractUrlBasedTicketValidator implements TicketValid
         log.debug("Constructing validation url: {}", validationUrl);
 
         try {
-            log.debug("Retrieving response from server.");
+            log.info("Retrieving response from server.");
             final String serverResponse = retrieveResponseFromServer(new URL(validationUrl), ticket);
 
             if (serverResponse == null) {
