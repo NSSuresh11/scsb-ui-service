@@ -179,17 +179,18 @@ public abstract class SCSBAbstractUrlBasedTicketValidator implements TicketValid
     @Override
     public final Assertion validate(final String ticket, final String service) throws TicketValidationException {
         final String validationUrl = constructValidationUrl(ticket, service);
-        log.debug("Constructing validation url: {}", validationUrl);
+        log.info("Constructing validation url: {}", validationUrl);
 
         try {
-            log.info("Retrieving response from server.");
+            log.info("Before Retrieving response from server.");
             final String serverResponse = retrieveResponseFromServer(new URL(validationUrl), ticket);
+            log.info("serverResponse >>>>>>>>> " + serverResponse);
 
             if (serverResponse == null) {
                 throw new TicketValidationException("The CAS server returned no response.");
             }
 
-            log.debug("Server response: {}", serverResponse);
+            log.info("Server response: {}", serverResponse);
 
             return parseResponseFromServer(serverResponse);
         } catch (final MalformedURLException e) {
