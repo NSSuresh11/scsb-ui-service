@@ -80,6 +80,7 @@ dependencies {
     implementation('org.apache.tomcat.embed:tomcat-embed-core:9.0.121')
     implementation('org.apache.tomcat.embed:tomcat-embed-el:9.0.121')
     implementation('org.apache.tomcat.embed:tomcat-embed-websocket:9.0.121')
+    implementation('org.apache.tomcat:tomcat-annotations-api:9.0.121')
     annotationProcessor('org.projectlombok:lombok:1.18.32')
 	testImplementation('org.projectlombok:lombok:1.18.32')
 	testAnnotationProcessor('org.projectlombok:lombok:1.18.32')
