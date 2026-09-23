@@ -102,8 +102,10 @@ public class SamlAuthHandler {
             deflater.end();
 
             String encoded = Base64.getEncoder().encodeToString(baos.toByteArray());
+            String separator = ssoUrl.contains("?") ? "&" : "?";
             StringBuilder redirectUrl = new StringBuilder(ssoUrl)
-                    .append("?SAMLRequest=")
+                    .append(separator)
+                    .append("SAMLRequest=")
                     .append(URLEncoder.encode(encoded, StandardCharsets.UTF_8));
 
             //  carry institutionCode in RelayState so ACS works even
