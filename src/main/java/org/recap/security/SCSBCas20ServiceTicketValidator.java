@@ -1,16 +1,16 @@
 package org.recap.security;
 
 import lombok.extern.slf4j.Slf4j;
-import org.jasig.cas.client.authentication.AttributePrincipal;
-import org.jasig.cas.client.authentication.AttributePrincipalImpl;
-import org.jasig.cas.client.proxy.Cas20ProxyRetriever;
-import org.jasig.cas.client.proxy.ProxyGrantingTicketStorage;
-import org.jasig.cas.client.proxy.ProxyRetriever;
-import org.jasig.cas.client.util.CommonUtils;
-import org.jasig.cas.client.util.XmlUtils;
-import org.jasig.cas.client.validation.Assertion;
-import org.jasig.cas.client.validation.AssertionImpl;
-import org.jasig.cas.client.validation.TicketValidationException;
+import org.apereo.cas.client.authentication.AttributePrincipal;
+import org.apereo.cas.client.authentication.AttributePrincipalImpl;
+import org.apereo.cas.client.proxy.Cas20ProxyRetriever;
+import org.apereo.cas.client.proxy.ProxyGrantingTicketStorage;
+import org.apereo.cas.client.proxy.ProxyRetriever;
+import org.apereo.cas.client.util.CommonUtils;
+import org.apereo.cas.client.util.XmlUtils;
+import org.apereo.cas.client.validation.Assertion;
+import org.apereo.cas.client.validation.AssertionImpl;
+import org.apereo.cas.client.validation.TicketValidationException;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;

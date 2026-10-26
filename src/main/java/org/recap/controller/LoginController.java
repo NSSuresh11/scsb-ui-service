@@ -13,17 +13,12 @@ import org.recap.util.PropertyUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.oauth2.common.OAuth2AccessToken;
-import org.springframework.security.oauth2.provider.OAuth2Authentication;
-import org.springframework.security.oauth2.provider.authentication.OAuth2AuthenticationDetails;
-import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import java.util.Map;
 
 
@@ -33,11 +28,6 @@ import java.util.Map;
 @Slf4j
 @Controller
 public class LoginController extends AbstractController {
-
-
-
-    @Autowired
-    private TokenStore tokenStore;
 
     @Autowired
     private UserInstitutionCache userInstitutionCache;
@@ -88,21 +78,6 @@ public class LoginController extends AbstractController {
             String username = auth.getName();
             String institutionFromRequest = request.getParameter("institution");
             String authType = propertyUtil.getPropertyByInstitutionAndKey(institutionFromRequest,  PropertyKeyConstants.ILS.ILS_AUTH_TYPE);
-            if (StringUtils.equals(authType, ScsbConstants.AUTH_TYPE_OAUTH)) {
-                OAuth2Authentication oauth = (OAuth2Authentication) auth;
-                String tokenString = ((OAuth2AuthenticationDetails) oauth.getDetails()).getTokenValue();
-                OAuth2AccessToken accessToken = tokenStore.readAccessToken(tokenString);
-
-                Map<String, Object> additionalInformation = accessToken.getAdditionalInformation();
-                if (null != additionalInformation) {
-                    username = (String) additionalInformation.get("sub");
-                    Cookie cookieUserName = new Cookie(ScsbConstants.USER_NAME, username);
-                    cookieUserName.setHttpOnly(true);
-                    cookieUserName.setSecure(true);
-                    HelperUtil.setCookieProperties(cookieUserName);
-                    response.addCookie(cookieUserName);
-                }
-            }
             UsernamePasswordToken token = new UsernamePasswordToken(username + ScsbConstants.TOKEN_SPLITER + institutionFromRequest, "", true);
             Map<String, Object> resultMap = getUserAuthUtil().doAuthentication(token);
             if(userHasRoles(resultMap)) {

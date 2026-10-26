@@ -2,10 +2,10 @@ package org.recap.security;
 
 
 import lombok.extern.slf4j.Slf4j;
-import org.jasig.cas.client.proxy.ProxyGrantingTicketStorage;
-import org.jasig.cas.client.proxy.ProxyGrantingTicketStorageImpl;
-import org.jasig.cas.client.proxy.ProxyRetriever;
-import org.jasig.cas.client.validation.TicketValidationException;
+import org.apereo.cas.client.proxy.ProxyGrantingTicketStorage;
+import org.apereo.cas.client.proxy.ProxyGrantingTicketStorageImpl;
+import org.apereo.cas.client.proxy.ProxyRetriever;
+import org.apereo.cas.client.validation.TicketValidationException;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;

@@ -1,6 +1,6 @@
 package org.recap.security;
 
-import org.jasig.cas.client.util.CommonUtils;
+import org.apereo.cas.client.util.CommonUtils;
 
 import java.net.URL;
 

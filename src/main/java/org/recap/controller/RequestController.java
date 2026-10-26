@@ -51,9 +51,9 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
-import javax.validation.Valid;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
+import jakarta.validation.Valid;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -374,7 +374,7 @@ public class RequestController extends ScsbController {
         String requestNotes = null;
         try {
             HttpEntity requestEntity = new HttpEntity<>(getRestHeaderService().getHttpHeaders());
-            UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(getScsbUrl() + ScsbConstants.URL_REQUEST_CANCEL).queryParam(ScsbCommonConstants.REQUEST_ID, requestForm.getRequestId());
+            UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(getScsbUrl() + ScsbConstants.URL_REQUEST_CANCEL).queryParam(ScsbCommonConstants.REQUEST_ID, requestForm.getRequestId());
             HttpEntity<CancelRequestResponse> responseEntity = getRestTemplate().exchange(builder.build().encode().toUri(), HttpMethod.POST, requestEntity, CancelRequestResponse.class);
             if(responseEntity != null) {
                 CancelRequestResponse cancelRequestResponse = responseEntity.getBody();

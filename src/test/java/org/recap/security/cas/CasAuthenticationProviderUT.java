@@ -1,7 +1,7 @@
 package org.recap.security.cas;
 
-import org.jasig.cas.client.validation.Assertion;
-import org.jasig.cas.client.validation.TicketValidator;
+import org.apereo.cas.client.validation.Assertion;
+import org.apereo.cas.client.validation.TicketValidator;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;

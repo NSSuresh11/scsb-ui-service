@@ -9,8 +9,8 @@ import org.recap.model.jpa.ItemEntity;
 import org.recap.model.jpa.RequestItemEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import java.text.SimpleDateFormat;
 import java.util.*;
 

@@ -44,7 +44,7 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import javax.persistence.EntityManager;
+import jakarta.persistence.EntityManager;
 import javax.servlet.http.HttpSession;
 import java.util.*;
 import java.util.function.Function;

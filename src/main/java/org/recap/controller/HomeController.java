@@ -12,13 +12,12 @@ import org.recap.util.PropertyUtil;
 import org.recap.util.ReportsUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -35,9 +34,6 @@ public class HomeController extends AbstractController {
 
     @Autowired
     private InstitutionDetailsRepository institutionDetailsRepository;
-
-    @Autowired
-    private TokenStore tokenStore;
 
     @Autowired
     private UserInstitutionCache userInstitutionCache;

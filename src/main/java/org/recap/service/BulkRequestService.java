@@ -113,7 +113,7 @@ public class BulkRequestService {
 
                 String bulkRequestItemUrl = scsbUrl + ScsbConstants.BULK_REQUEST_ITEM_URL;
                 HttpEntity requestEntity = new HttpEntity<>(restHeaderService.getHttpHeaders());
-                UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(bulkRequestItemUrl).queryParam("bulkRequestId", savedBulkRequestItemEntity.getId());
+                UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(bulkRequestItemUrl).queryParam("bulkRequestId", savedBulkRequestItemEntity.getId());
                 getRestTemplate().exchange(builder.build().encode().toUri(), HttpMethod.POST, requestEntity, BulkRequestResponse.class);
 
                 bulkRequestForm.setSubmitted(true);

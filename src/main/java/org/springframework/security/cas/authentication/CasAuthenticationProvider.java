@@ -1,10 +1,10 @@
 package org.springframework.security.cas.authentication;
 
 import lombok.extern.slf4j.Slf4j;
-import org.jasig.cas.client.proxy.Cas20ProxyRetriever;
-import org.jasig.cas.client.validation.Assertion;
-import org.jasig.cas.client.validation.TicketValidationException;
-import org.jasig.cas.client.validation.TicketValidator;
+import org.apereo.cas.client.proxy.Cas20ProxyRetriever;
+import org.apereo.cas.client.validation.Assertion;
+import org.apereo.cas.client.validation.TicketValidationException;
+import org.apereo.cas.client.validation.TicketValidator;
 import org.recap.PropertyKeyConstants;
 import org.recap.ScsbConstants;
 import org.recap.security.SCSBCas20ServiceTicketValidator;
@@ -83,8 +83,8 @@ public class CasAuthenticationProvider implements AuthenticationProvider,
         }
 
         if (authentication instanceof UsernamePasswordAuthenticationToken
-                && (!CasAuthenticationFilter.CAS_STATEFUL_IDENTIFIER
-                .equals(authentication.getPrincipal().toString()) && !CasAuthenticationFilter.CAS_STATELESS_IDENTIFIER
+                && (!CasServiceTicketAuthenticationToken.CAS_STATEFUL_IDENTIFIER
+                .equals(authentication.getPrincipal().toString()) && !CasServiceTicketAuthenticationToken.CAS_STATELESS_IDENTIFIER
                 .equals(authentication.getPrincipal().toString()))) {
             // UsernamePasswordAuthenticationToken not CAS related
             return null;
@@ -113,7 +113,7 @@ public class CasAuthenticationProvider implements AuthenticationProvider,
         boolean stateless = false;
 
         if (authentication instanceof UsernamePasswordAuthenticationToken
-                && CasAuthenticationFilter.CAS_STATELESS_IDENTIFIER.equals(authentication
+                && CasServiceTicketAuthenticationToken.CAS_STATELESS_IDENTIFIER.equals(authentication
                 .getPrincipal())) {
             stateless = true;
         }

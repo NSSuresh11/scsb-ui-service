@@ -118,7 +118,7 @@ public class CollectionServiceUtil {
         try {
             HttpEntity requestEntity = new HttpEntity<>(getRestHeaderService().getHttpHeaders());
 
-            UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(getScsbUrl() + ScsbConstants.SCSB_UPDATE_CGD_URL)
+            UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(getScsbUrl() + ScsbConstants.SCSB_UPDATE_CGD_URL)
                     .queryParam(ScsbCommonConstants.CGD_UPDATE_ITEM_BARCODE, bibliographicMarcForm.getBarcode())
                     .queryParam(ScsbConstants.OWNING_INSTITUTION, bibliographicMarcForm.getOwningInstitution())
                     .queryParam(ScsbCommonConstants.OLD_CGD, bibliographicMarcForm.getCollectionGroupDesignation())

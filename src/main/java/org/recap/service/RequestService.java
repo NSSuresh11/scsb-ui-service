@@ -47,8 +47,8 @@ import org.springframework.validation.support.BindingAwareModelMap;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
-import javax.annotation.CheckForNull;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.annotation.Nonnull;
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -107,7 +107,7 @@ public class RequestService extends AbstractController {
     @Value("${" + PropertyKeyConstants.SCSB_SUPPORT_INSTITUTION + "}")
     private String supportInstitution;
 
-    @CheckForNull
+    @Nonnull
     public RestTemplate getRestTemplate(){
         return new RestTemplate();
     }
