@@ -1,73 +1,74 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
 
-	<include
-		resource="org/springframework/boot/logging/logback/defaults.xml" />
+	<!-- Register conversion words -->
+	<conversionRule conversionWord="d" converterClass="ch.qos.logback.classic.pattern.DateConverter" />
+	<conversionRule conversionWord="relative" converterClass="ch.qos.logback.classic.pattern.RelativeTimeConverter" />
+	<conversionRule conversionWord="thread" converterClass="ch.qos.logback.classic.pattern.ThreadConverter" />
+	<conversionRule conversionWord="level" converterClass="ch.qos.logback.classic.pattern.LevelConverter" />
+	<conversionRule conversionWord="logger" converterClass="ch.qos.logback.classic.pattern.LoggerConverter" />
+	<conversionRule conversionWord="msg" converterClass="ch.qos.logback.classic.pattern.MessageConverter" />
+	<conversionRule conversionWord="n" converterClass="ch.qos.logback.classic.pattern.LineSeparatorConverter" />
+	<conversionRule conversionWord="mdc" converterClass="ch.qos.logback.classic.pattern.MDCConverter" />
 
-	<appender name="jsonConsoleAppender"
-		class="ch.qos.logback.core.ConsoleAppender">
-		<encoder
-			class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
-			<providers>
-				<timestamp>
-					<timeZone>US/Eastern</timeZone>
-				</timestamp>
-				<version />
-				<logLevel />
-				<message />
-				<loggerName />
-				<threadName />
-				<context />
-				<pattern>
-					<omitEmptyFields>true</omitEmptyFields>
-					<pattern>
-						{
-						"trace": {
-						"trace_id": "%mdc{X-B3-TraceId}",
-						"span_id": "%mdc{X-B3-SpanId}",
-						"parent_span_id": "%mdc{X-B3-ParentSpanId}",
-						"exportable": "%mdc{X-Span-Export}"
-						}
-						}
-					</pattern>
-				</pattern>
-				<mdc>
-					<excludeMdcKeyName>traceId</excludeMdcKeyName>
-					<excludeMdcKeyName>spanId</excludeMdcKeyName>
-					<excludeMdcKeyName>parentId</excludeMdcKeyName>
-					<excludeMdcKeyName>spanExportable</excludeMdcKeyName>
-					<excludeMdcKeyName>X-B3-TraceId</excludeMdcKeyName>
-					<excludeMdcKeyName>X-B3-SpanId</excludeMdcKeyName>
-					<excludeMdcKeyName>X-B3-ParentSpanId</excludeMdcKeyName>
-					<excludeMdcKeyName>X-Span-Export</excludeMdcKeyName>
-				</mdc>
-				<stackHash>
-					<fieldName>exception-hash</fieldName>
-				</stackHash>
-				<provider class="org.recap.CustomStackTraceJsonProvider">
-					<fieldName>stack_trace</fieldName>
-					<throwableConverter
-						class="net.logstash.logback.stacktrace.ShortenedThrowableConverter">
-						<shortenedClassNameLength>short</shortenedClassNameLength>
-						<maxDepthPerThrowable>short</maxDepthPerThrowable>
-						<maxLength>short</maxLength>
-						<rootCauseFirst>true</rootCauseFirst>
-						<exclude>sun\.reflect\..*\.invoke.*</exclude>
-					</throwableConverter>
-				</provider>
-			</providers>
-		</encoder>
-	</appender>
+    <!-- Include defaults.xml -->
+    <include resource="org/springframework/boot/logging/logback/defaults.xml" />
+
+    <!-- Console Appender -->
+    <appender name="jsonConsoleAppender" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+        <providers>
+                <timestamp>
+                    <timeZone>US/Eastern</timeZone>
+                </timestamp>
+                <version />
+                <logLevel />
+                <message />
+                <loggerName />
+                <threadName />
+                <context />
+                <pattern>
+                    <omitEmptyFields>true</omitEmptyFields>
+                    <pattern>
+                        {
+                        "trace": {
+                        "trace_id": "%mdc{X-B3-TraceId}",
+                        "span_id": "%mdc{X-B3-SpanId}",
+                        "parent_span_id": "%mdc{X-B3-ParentSpanId}",
+                        "exportable": "%mdc{X-Span-Export}"
+                        }
+                        }
+                    </pattern>
+                </pattern>
+                <mdc>
+                    <excludeMdcKeyName>traceId</excludeMdcKeyName>
+                    <excludeMdcKeyName>spanId</excludeMdcKeyName>
+                    <excludeMdcKeyName>parentId</excludeMdcKeyName>
+                    <excludeMdcKeyName>spanExportable</excludeMdcKeyName>
+                    <excludeMdcKeyName>X-B3-TraceId</excludeMdcKeyName>
+                    <excludeMdcKeyName>X-B3-SpanId</excludeMdcKeyName>
+                    <excludeMdcKeyName>X-B3-ParentSpanId</excludeMdcKeyName>
+                    <excludeMdcKeyName>X-Span-Export</excludeMdcKeyName>
+                </mdc>
+                <stackHash>
+                    <fieldName>exception-hash</fieldName>
+                </stackHash>
+                <provider class="org.recap.CustomStackTraceJsonProvider">
+                    <fieldName>stack_trace</fieldName>
+                </provider>
+            </providers>
+        </encoder>
+    </appender>
 
     <appender name="FILE_ROLLER_DATE_SIZE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>/home/suresh.sm/logs/scsb-ui/scsb-ui.log</file>
+        <file>/recap-vol/logs/scsb-ui/scsb-ui.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <!-- daily rollover -->
-            <fileNamePattern>/home/suresh.sm/logs/scsb-ui/scsb-ui-%d{yyyyMMMdd}.%i.log</fileNamePattern>
+            <fileNamePattern>/recap-vol/logs/scsb-ui/scsb-ui-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
             <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
             <!-- or whenever the file size reaches 5MB -->
             <maxFileSize>10MB</maxFileSize>
-            </timeBasedFileNamingAndTriggeringPolicy>
+			<!--            </timeBasedFileNamingAndTriggeringPolicy>-->
             <!-- keep 30 days' worth of history -->
             <maxHistory>90</maxHistory>
         </rollingPolicy>
@@ -75,7 +76,7 @@
             <charset>UTF-8</charset>
             <layout class="ch.qos.logback.classic.PatternLayout">
                 <Pattern>
-                    %d{yyyy-MM-dd HH:mm:ss.SSS} %-4relative [%thread] %-5level %logger{35} - %msg%n
+					%d{yyyy-MM-dd HH:mm:ss.SSS} %-4relative [%thread] %-5level %logger{35} - %msg %mdc%n
                 </Pattern>
             </layout>         
         </encoder>
