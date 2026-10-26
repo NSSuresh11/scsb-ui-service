@@ -200,9 +200,7 @@ public class SCSBExceptionTranslationFilter extends GenericFilterBean {
         String institution = HelperUtil.getInstitutionFromRequest(request);
         if (StringUtils.isNotBlank(institution)) {
             String authType = HelperUtil.getBean(PropertyUtil.class).getPropertyByInstitutionAndKey(institution, PropertyKeyConstants.ILS.ILS_AUTH_TYPE);
-            if(StringUtils.equals(authType, ScsbConstants.AUTH_TYPE_OAUTH)) {
-                this.authenticationEntryPoint.commence(request,response,reason);
-            } else if (StringUtils.equals(authType, ScsbConstants.AUTH_TYPE_SAML)) {
+            if (StringUtils.equals(authType, ScsbConstants.AUTH_TYPE_SAML)) {
                 try {
                     SamlCallbackController samlController = HelperUtil.getBean(org.recap.controller.saml.SamlCallbackController.class);
                     String view = samlController.initiateSaml(institution, request);
