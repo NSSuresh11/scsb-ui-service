@@ -90,7 +90,7 @@ public class MultiCASAndOAuthSecurityConfiguration {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/", "/home", "/actuator", "/actuator/prometheus", "/login").permitAll()
                         .requestMatchers("/auth/saml", "/saml/metadata/**", "/saml/acs", "/saml/acs/**").permitAll()
-                        .requestMatchers("/**").authenticated().anyRequest().authenticated()
+                        .anyRequest().authenticated()
                 )
                 .sessionManagement(sm -> sm.invalidSessionUrl("/home"))
 
