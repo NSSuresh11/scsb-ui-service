@@ -1,7 +1,8 @@
 package org.recap.helper;
 
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.JavaType;
+import tools.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.recap.service.RestHeaderService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -76,7 +77,7 @@ public class RestTemplateHelper {
                 response.getStatusCode() == HttpStatus.CREATED) {
             try {
                 result = objectMapper.readValue(response.getBody(), javaType);
-            } catch (IOException e) {
+            } catch (JacksonException e) {
                 log.info(e.getMessage());
             }
         } else {
