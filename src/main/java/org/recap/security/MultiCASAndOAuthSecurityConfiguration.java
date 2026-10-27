@@ -19,6 +19,7 @@ import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.cas.authentication.CasAuthenticationProvider;
 import org.springframework.security.cas.web.CasAuthenticationFilter;
 import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
@@ -32,6 +33,8 @@ import org.springframework.security.web.authentication.logout.SecurityContextLog
 import org.springframework.security.web.csrf.CsrfFilter;
 //import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.security.interfaces.RSAPublicKey;
 import java.util.Arrays;
@@ -40,7 +43,7 @@ import java.util.Arrays;
  * Created by sheiks on 30/01/17.
  */
 @Configuration
-@EnableMethodSecurity
+@EnableMethodSecurity(securedEnabled = true)
 public class MultiCASAndOAuthSecurityConfiguration {
 
     @Value("${" + PropertyKeyConstants.CAS_DEFAULT_URL_PREFIX + "}")
@@ -74,7 +77,6 @@ public class MultiCASAndOAuthSecurityConfiguration {
     private ApplicationContext applicationContext;
 
 
-
     @Bean
     protected SecurityFilterChain configure(HttpSecurity http) throws Exception {
         String loginPath = "/login";
@@ -88,16 +90,16 @@ public class MultiCASAndOAuthSecurityConfiguration {
                 .addFilterBefore(reCAPLogoutFilter(), LogoutFilter.class)
                 .addFilterBefore(requestCasGlobalLogoutFilter(), LogoutFilter.class)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/", "/home", "/actuator", "/actuator/prometheus", "/login").permitAll()
-                        .requestMatchers("/auth/saml", "/saml/metadata/**", "/saml/acs", "/saml/acs/**").permitAll()
-                        .anyRequest().authenticated()
-                )
+                .requestMatchers("/", "/home", "/actuator", "/actuator/prometheus", "/login").permitAll()
+                .requestMatchers("/auth/saml", "/saml/metadata/**", "/saml/acs", "/saml/acs/**").permitAll()
+                .anyRequest().authenticated()
+        )
                 .sessionManagement(sm -> sm.invalidSessionUrl("/home"))
 
                 .headers(headers -> {
                     if (Boolean.TRUE.equals(cspEnable)) {
                         headers.contentSecurityPolicy(csp ->
-                                csp.policyDirectives("default-src " + scsbUiUrl + " " + cspValue   + "; frame-ancestors " + " " + frameAncestorValue));
+                                csp.policyDirectives("default-src " + scsbUiUrl + " " + cspValue + "; frame-ancestors " + " " + frameAncestorValue));
                     }
                 })
 
@@ -122,7 +124,7 @@ public class MultiCASAndOAuthSecurityConfiguration {
         SCSBSimpleUrlLogoutSuccessHandler SCSBSimpleUrlLogoutSuccessHandler = new SCSBSimpleUrlLogoutSuccessHandler(userAuthUtil);
         SCSBSimpleUrlLogoutSuccessHandler.setDefaultTargetUrl(logoutSuccessUrl);
         LogoutFilter logoutFilter = new LogoutFilter(SCSBSimpleUrlLogoutSuccessHandler, new SecurityContextLogoutHandler());
-      //  logoutFilter.setLogoutRequestMatcher(new AntPathRequestMatcher("/logout", "GET"));
+        //  logoutFilter.setLogoutRequestMatcher(new AntPathRequestMatcher("/logout", "GET"));
         return logoutFilter;
     }
 
@@ -151,11 +153,11 @@ public class MultiCASAndOAuthSecurityConfiguration {
     }
 
     @Bean
-    FilterRegistrationBean<SCSBValidationFilter> filterRegistrationBean(){
-        FilterRegistrationBean<SCSBValidationFilter>  filterRegistrationBean = new FilterRegistrationBean();
+    FilterRegistrationBean<SCSBValidationFilter> filterRegistrationBean() {
+        FilterRegistrationBean<SCSBValidationFilter> filterRegistrationBean = new FilterRegistrationBean();
         SCSBValidationFilter scsbValidationFilter = new SCSBValidationFilter();
         filterRegistrationBean.setFilter(scsbValidationFilter);
-        filterRegistrationBean.addUrlPatterns("/collection/*","/search/*","/request/*","/reports/*","/userRoles/*","/bulkRequest/*","/roles/*","/jobs/*","/openMarcRecordByBibId/*","/admin/*","/dataExport/*","/request-log/*");
+        filterRegistrationBean.addUrlPatterns("/collection/*", "/search/*", "/request/*", "/reports/*", "/userRoles/*", "/bulkRequest/*", "/roles/*", "/jobs/*", "/openMarcRecordByBibId/*", "/admin/*", "/dataExport/*", "/request-log/*");
         return filterRegistrationBean;
     }
 
@@ -204,8 +206,8 @@ public class MultiCASAndOAuthSecurityConfiguration {
 
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() throws Exception {
-        return (web)->web.ignoring().requestMatchers("/resources/**", "/static/**", "/assets/**", "/index.html", "/**/*.css", "/**/*.js", "/**/*.png", "/**/*.jpg", "/**/*.gif", "/**/*.svg", "/**/favicon.ico","/**/*.bmp","/**/*.jpeg","/**/*.ttf","/**/*.eot","/**/*.svg","/**/*.woff","/**/*.woff2","/images/**").
-                requestMatchers("/collection/**","/search/**","/request/**","/reports/**","/userRoles/**","/bulkRequest/**","/roles/**","/jobs/**","/openMarcRecordByBibId/**","/admin/**","/api/**","/dataExport/**","/validation/**","/actuator/**","/monitoring/**","/request-log/**");
+        return (web) -> web.ignoring().requestMatchers("/resources/**", "/static/**", "/assets/**", "/index.html", "/**/*.css", "/**/*.js", "/**/*.png", "/**/*.jpg", "/**/*.gif", "/**/*.svg", "/**/favicon.ico", "/**/*.bmp", "/**/*.jpeg", "/**/*.ttf", "/**/*.eot", "/**/*.svg", "/**/*.woff", "/**/*.woff2", "/images/**").
+                requestMatchers("/collection/**", "/search/**", "/request/**", "/reports/**", "/userRoles/**", "/bulkRequest/**", "/roles/**", "/jobs/**", "/openMarcRecordByBibId/**", "/admin/**", "/api/**", "/dataExport/**", "/validation/**", "/actuator/**", "/monitoring/**", "/request-log/**");
     }
 
     /**
@@ -219,16 +221,15 @@ public class MultiCASAndOAuthSecurityConfiguration {
     }
 
 
-  /*  @Bean
-    WebClient webClient(ClientRegistrationRepository clientRegistrationRepository,
-                        OAuth2AuthorizedClientRepository authorizedClientRepository) {
-        ServletOAuth2AuthorizedClientExchangeFilterFunction oauth2 =
-                new ServletOAuth2AuthorizedClientExchangeFilterFunction(clientRegistrationRepository,
-                        authorizedClientRepository);
-        oauth2.setDefaultOAuth2AuthorizedClient(true);
-        return WebClient.builder()
-                .apply(oauth2.oauth2Configuration())
-                .build();
+    @Bean
+    public WebMvcConfigurer corsConfigurer() {
+        return new WebMvcConfigurer() {
+            @Override
+            public void addCorsMappings(CorsRegistry registry) {
+                registry.addMapping("/**").allowedMethods("GET", "POST", "PUT", "DELETE")
+                        .allowedOrigins("*")
+                        .allowedHeaders("*");
+            }
+        };
     }
-*/
 }

@@ -29,6 +29,7 @@ import java.util.Map;
 @Controller
 public class LoginController extends AbstractController {
 
+
     @Autowired
     private UserInstitutionCache userInstitutionCache;
 
