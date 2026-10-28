@@ -95,9 +95,9 @@ public class MultiCASAndOAuthSecurityConfiguration   {
 
      //   http.csrf().ignoringAntMatchers("/home", "/saml/acs", "/saml/acs/**");
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/", "/home", "/actuator", "/actuator/prometheus", "/login,/login/**").permitAll()
+                        .requestMatchers("/", "/home", "/actuator", "/actuator/prometheus", "/login","/login/**","/search").permitAll()
                         .requestMatchers("/auth/saml", "/callback/saml","/saml/metadata/**", "/saml/acs", "/saml/acs/**").permitAll()
-                        .requestMatchers("/*").authenticated().anyRequest().authenticated()
+                        .anyRequest().authenticated()
 
                 )
 
@@ -242,7 +242,7 @@ public class MultiCASAndOAuthSecurityConfiguration   {
     }
 
 
-    @Bean
+  /*  @Bean
     public WebMvcConfigurer corsConfigurer() {
         return new WebMvcConfigurer() {
             @Override
@@ -252,5 +252,5 @@ public class MultiCASAndOAuthSecurityConfiguration   {
                         .allowedHeaders("*");
             }
         };
-    }
+    }*/
 }
