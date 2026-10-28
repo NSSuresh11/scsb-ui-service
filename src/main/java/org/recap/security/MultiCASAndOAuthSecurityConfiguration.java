@@ -11,17 +11,18 @@ import org.recap.util.UserAuthUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.cas.authentication.CasAuthenticationProvider;
 import org.springframework.security.cas.web.CasAuthenticationFilter;
-import org.springframework.security.config.Customizer;
-import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.annotation.web.configurers.SessionManagementConfigurer;
 import org.springframework.security.core.userdetails.AuthenticationUserDetailsService;
@@ -31,20 +32,18 @@ import org.springframework.security.web.authentication.LoginUrlAuthenticationEnt
 import org.springframework.security.web.authentication.logout.LogoutFilter;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.security.web.csrf.CsrfFilter;
-//import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
-import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import java.security.interfaces.RSAPublicKey;
 import java.util.Arrays;
 
 /**
  * Created by sheiks on 30/01/17.
  */
 @Configuration
-@EnableMethodSecurity(securedEnabled = true)
-public class MultiCASAndOAuthSecurityConfiguration {
+@EnableMethodSecurity(securedEnabled = true, prePostEnabled = true)
+public class MultiCASAndOAuthSecurityConfiguration   {
 
     @Value("${" + PropertyKeyConstants.CAS_DEFAULT_URL_PREFIX + "}")
     private String casUrlPrefix;
@@ -73,12 +72,9 @@ public class MultiCASAndOAuthSecurityConfiguration {
     @Autowired
     private UserAuthUtil userAuthUtil;
 
-    @Autowired
-    private ApplicationContext applicationContext;
-
 
     @Bean
-    protected SecurityFilterChain configure(HttpSecurity http) throws Exception {
+    protected SecurityFilterChain SecurityFilterChain(HttpSecurity http) throws Exception {
         String loginPath = "/login";
         LoginUrlAuthenticationEntryPoint loginUrlAuthenticationEntryPoint = new LoginUrlAuthenticationEntryPoint(loginPath);
         SCSBExceptionTranslationFilter SCSBExceptionTranslationFilter = new SCSBExceptionTranslationFilter(casPropertyProvider, loginUrlAuthenticationEntryPoint);
@@ -89,11 +85,27 @@ public class MultiCASAndOAuthSecurityConfiguration {
                 .addFilter(casAuthenticationFilter())
                 .addFilterBefore(reCAPLogoutFilter(), LogoutFilter.class)
                 .addFilterBefore(requestCasGlobalLogoutFilter(), LogoutFilter.class)
+
+     //   http.csrf().ignoringAntMatchers("/home", "/saml/acs", "/saml/acs/**");
                 .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/", "/home", "/actuator", "/actuator/prometheus", "/login").permitAll()
-                .requestMatchers("/auth/saml", "/saml/metadata/**", "/saml/acs", "/saml/acs/**").permitAll()
-                .anyRequest().authenticated()
-        )
+                        .requestMatchers("/", "/home", "/actuator", "/actuator/prometheus", "/login").permitAll()
+                        .requestMatchers("/auth/saml", "/callback/saml","/saml/metadata/**", "/saml/acs", "/saml/acs/**").permitAll()
+                        .anyRequest().authenticated()
+                )
+                /*        .antMatchers("/", "/home", "/actuator", "/actuator/prometheus").permitAll()
+                .antMatchers("/auth/saml", "/callback/saml", "/saml/metadata/**").permitAll()
+                .antMatchers("/", "/home", "/actuator", "/actuator/prometheus").permitAll()
+                .antMatchers("/auth/saml", "/saml/metadata/**", "/saml/acs", "/saml/acs/**").permitAll()
+                .antMatchers("*").authenticated().anyRequest().authenticated(); */
+
+     /*   SessionManagementConfigurer<HttpSecurity> httpSecuritySessionManagementConfigurer = http.sessionManagement();
+        httpSecuritySessionManagementConfigurer.invalidSessionUrl("/home");
+        if (cspEnable) {
+            http.headers(headers -> headers.contentSecurityPolicy(contentSecurityPolicy -> contentSecurityPolicy.policyDirectives( "default-src "+ scsbUiUrl + " " + cspValue   + "; frame-ancestors " + " " + frameAncestorValue)));
+        }
+        http.logout().logoutUrl(ScsbConstants.LOG_USER_LOGOUT_URL).logoutSuccessUrl("/").invalidateHttpSession(true)
+                .deleteCookies("JSESSIONID");
+        // @formatter:on*/
                 .sessionManagement(sm -> sm.invalidSessionUrl("/home"))
 
                 .headers(headers -> {
@@ -153,11 +165,11 @@ public class MultiCASAndOAuthSecurityConfiguration {
     }
 
     @Bean
-    FilterRegistrationBean<SCSBValidationFilter> filterRegistrationBean() {
-        FilterRegistrationBean<SCSBValidationFilter> filterRegistrationBean = new FilterRegistrationBean();
+    FilterRegistrationBean<SCSBValidationFilter> filterRegistrationBean(){
+        FilterRegistrationBean<SCSBValidationFilter>  filterRegistrationBean = new FilterRegistrationBean();
         SCSBValidationFilter scsbValidationFilter = new SCSBValidationFilter();
         filterRegistrationBean.setFilter(scsbValidationFilter);
-        filterRegistrationBean.addUrlPatterns("/collection/*", "/search/*", "/request/*", "/reports/*", "/userRoles/*", "/bulkRequest/*", "/roles/*", "/jobs/*", "/openMarcRecordByBibId/*", "/admin/*", "/dataExport/*", "/request-log/*");
+        filterRegistrationBean.addUrlPatterns("/collection/*","/search/*","/request/*","/reports/*","/userRoles/*","/bulkRequest/*","/roles/*","/jobs/*","/openMarcRecordByBibId/*","/admin/*","/dataExport/*","/request-log/*");
         return filterRegistrationBean;
     }
 
@@ -206,8 +218,8 @@ public class MultiCASAndOAuthSecurityConfiguration {
 
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() throws Exception {
-        return (web) -> web.ignoring().requestMatchers("/resources/**", "/static/**", "/assets/**", "/index.html", "/**/*.css", "/**/*.js", "/**/*.png", "/**/*.jpg", "/**/*.gif", "/**/*.svg", "/**/favicon.ico", "/**/*.bmp", "/**/*.jpeg", "/**/*.ttf", "/**/*.eot", "/**/*.svg", "/**/*.woff", "/**/*.woff2", "/images/**").
-                requestMatchers("/collection/**", "/search/**", "/request/**", "/reports/**", "/userRoles/**", "/bulkRequest/**", "/roles/**", "/jobs/**", "/openMarcRecordByBibId/**", "/admin/**", "/api/**", "/dataExport/**", "/validation/**", "/actuator/**", "/monitoring/**", "/request-log/**");
+        return (web) -> web.ignoring().requestMatchers("/resources/**", "/static/**", "/assets/**", "/index.html", "/**/*.css", "/**/*.js", "/**/*.png", "/**/*.jpg", "/**/*.gif", "/**/*.svg", "/**/favicon.ico","/**/*.bmp","/**/*.jpeg","/**/*.ttf","/**/*.eot","/**/*.svg","/**/*.woff","/**/*.woff2","/images/**").
+                requestMatchers("/collection/**","/search/**","/request/**","/reports/**","/userRoles/**","/bulkRequest/**","/roles/**","/jobs/**","/openMarcRecordByBibId/**","/admin/**","/api/**","/dataExport/**","/validation/**","/actuator/**","/monitoring/**","/request-log/**");
     }
 
     /**
@@ -233,3 +245,4 @@ public class MultiCASAndOAuthSecurityConfiguration {
         };
     }
 }
+
