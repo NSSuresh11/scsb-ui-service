@@ -88,7 +88,7 @@ public class MultiCASAndOAuthSecurityConfiguration   {
 
      //   http.csrf().ignoringAntMatchers("/home", "/saml/acs", "/saml/acs/**");
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/", "/home", "/actuator", "/actuator/prometheus", "/login").permitAll()
+                        .requestMatchers("/", "/home", "/actuator", "/actuator/prometheus", "/login,/login/**").permitAll()
                         .requestMatchers("/auth/saml", "/callback/saml","/saml/metadata/**", "/saml/acs", "/saml/acs/**").permitAll()
                         .anyRequest().authenticated()
                 )
