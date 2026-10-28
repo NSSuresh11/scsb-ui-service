@@ -88,7 +88,10 @@ public class MultiCASAndOAuthSecurityConfiguration   {
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(loginUrlAuthenticationEntryPoint))
                 .addFilter(casAuthenticationFilter())
                 .addFilterBefore(reCAPLogoutFilter(), LogoutFilter.class)
-                .addFilterBefore(requestCasGlobalLogoutFilter(), LogoutFilter.class)
+                .addFilterBefore(requestCasGlobalLogoutFilter(), LogoutFilter.class).
+                csrf(csrf -> csrf
+                        .ignoringRequestMatchers("/home", "/saml/acs", "/saml/acs/**")
+                )
 
      //   http.csrf().ignoringAntMatchers("/home", "/saml/acs", "/saml/acs/**");
                 .authorizeHttpRequests(auth -> auth
@@ -97,6 +100,7 @@ public class MultiCASAndOAuthSecurityConfiguration   {
                         .requestMatchers("/*").authenticated().anyRequest().authenticated()
 
                 )
+
                 /*        .antMatchers("/", "/home", "/actuator", "/actuator/prometheus").permitAll()
                 .antMatchers("/auth/saml", "/callback/saml", "/saml/metadata/**").permitAll()
                 .antMatchers("/", "/home", "/actuator", "/actuator/prometheus").permitAll()
