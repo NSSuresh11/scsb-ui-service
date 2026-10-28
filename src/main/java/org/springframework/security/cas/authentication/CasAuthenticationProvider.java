@@ -49,9 +49,6 @@ public class CasAuthenticationProvider implements AuthenticationProvider,
     // ~ Instance fields
     // ================================================================================================
     private final UserDetailsChecker userDetailsChecker = new AccountStatusUserDetailsChecker();
-    static final String CAS_STATELESS_IDENTIFIER = "_cas_stateless_";
-
-    static final String CAS_STATEFUL_IDENTIFIER = "_cas_stateful_";
     /**
      * The Messages.
      */
@@ -84,8 +81,8 @@ public class CasAuthenticationProvider implements AuthenticationProvider,
         }
 
         if (authentication instanceof UsernamePasswordAuthenticationToken
-                && (!CAS_STATEFUL_IDENTIFIER
-                .equals(authentication.getPrincipal().toString()) && !CAS_STATELESS_IDENTIFIER
+                && (!CasServiceTicketAuthenticationToken.CAS_STATEFUL_IDENTIFIER
+                .equals(authentication.getPrincipal().toString()) && !CasServiceTicketAuthenticationToken.CAS_STATELESS_IDENTIFIER
                 .equals(authentication.getPrincipal().toString()))) {
             // UsernamePasswordAuthenticationToken not CAS related
             return null;
@@ -114,7 +111,7 @@ public class CasAuthenticationProvider implements AuthenticationProvider,
         boolean stateless = false;
 
         if (authentication instanceof UsernamePasswordAuthenticationToken
-                && CAS_STATELESS_IDENTIFIER.equals(authentication
+                && CasServiceTicketAuthenticationToken.CAS_STATELESS_IDENTIFIER.equals(authentication
                 .getPrincipal())) {
             stateless = true;
         }
@@ -136,6 +133,11 @@ public class CasAuthenticationProvider implements AuthenticationProvider,
             // Add to cache
             statelessTicketCache.putTicketInCache(result);
         }
+        log.info("CasAuthenticationProvider.authenticate : result : {}", result);
+        log.info("CasAuthenticationProvider.authenticate : result.isAuthenticated() : {}", result.isAuthenticated());
+        log.info("CasAuthenticationProvider.authenticate : result.getCredentials() : {}", result.getCredentials().toString());
+
+
 
         return result;
     }
