@@ -11,6 +11,7 @@ import org.recap.util.UserAuthUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.cas.authentication.CasAuthenticationProvider;
@@ -72,9 +73,12 @@ public class MultiCASAndOAuthSecurityConfiguration   {
     @Autowired
     private UserAuthUtil userAuthUtil;
 
+    @Autowired
+    private ApplicationContext applicationContext;
+
 
     @Bean
-    protected SecurityFilterChain SecurityFilterChain(HttpSecurity http) throws Exception {
+    protected SecurityFilterChain configure(HttpSecurity http) throws Exception {
         String loginPath = "/login";
         LoginUrlAuthenticationEntryPoint loginUrlAuthenticationEntryPoint = new LoginUrlAuthenticationEntryPoint(loginPath);
         SCSBExceptionTranslationFilter SCSBExceptionTranslationFilter = new SCSBExceptionTranslationFilter(casPropertyProvider, loginUrlAuthenticationEntryPoint);
@@ -90,7 +94,8 @@ public class MultiCASAndOAuthSecurityConfiguration   {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/", "/home", "/actuator", "/actuator/prometheus", "/login,/login/**").permitAll()
                         .requestMatchers("/auth/saml", "/callback/saml","/saml/metadata/**", "/saml/acs", "/saml/acs/**").permitAll()
-                        .anyRequest().authenticated()
+                        .requestMatchers("/*").authenticated().anyRequest().authenticated()
+
                 )
                 /*        .antMatchers("/", "/home", "/actuator", "/actuator/prometheus").permitAll()
                 .antMatchers("/auth/saml", "/callback/saml", "/saml/metadata/**").permitAll()
@@ -245,4 +250,3 @@ public class MultiCASAndOAuthSecurityConfiguration   {
         };
     }
 }
-
