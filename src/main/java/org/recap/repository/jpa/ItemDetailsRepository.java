@@ -88,8 +88,8 @@ public interface ItemDetailsRepository extends BaseRepository<ItemEntity> {
      * @param barcode the barcode
      * @return the item status by barcode and is deleted false
      */
-    @Query(value = "select itemStatus.statusCode from ItemEntity item, ItemStatusEntity itemStatus where item.itemAvailabilityStatusId = itemStatus.id and item.barcode = :barcode and item.isDeleted = Boolean.FALSE")
-    String getItemStatusByBarcodeAndIsDeletedFalse(@Param("barcode") String barcode);
+    @Query(value = "select itemStatus.statusCode from ItemEntity item, ItemStatusEntity itemStatus where item.itemAvailabilityStatusId = itemStatus.id and item.barcode = :barcode and item.isDeleted = :deleted")
+    String getItemStatusByBarcodeAndIsDeletedFalse(@Param("barcode") String barcode,@Param("deleted") Boolean deleted);
 
 
     /**
