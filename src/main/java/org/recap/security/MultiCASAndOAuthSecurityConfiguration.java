@@ -94,7 +94,7 @@ public class MultiCASAndOAuthSecurityConfiguration {
                 .requestMatchers("/auth/saml", "/saml/metadata/**", "/saml/acs", "/saml/acs/**").permitAll()
                 .anyRequest().authenticated()
         )
-            //    .sessionManagement(sm -> sm.invalidSessionUrl("/home"))
+                .sessionManagement(sm -> sm.invalidSessionUrl("/home"))
 
                 .headers(headers -> {
                     if (Boolean.TRUE.equals(cspEnable)) {

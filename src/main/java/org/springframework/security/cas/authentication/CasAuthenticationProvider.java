@@ -20,8 +20,6 @@ import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.cas.ServiceProperties;
-import org.springframework.security.cas.web.CasAuthenticationFilter;
-import org.springframework.security.cas.web.authentication.ServiceAuthenticationDetails;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.SpringSecurityMessageSource;
@@ -51,6 +49,9 @@ public class CasAuthenticationProvider implements AuthenticationProvider,
     // ~ Instance fields
     // ================================================================================================
     private final UserDetailsChecker userDetailsChecker = new AccountStatusUserDetailsChecker();
+    static final String CAS_STATELESS_IDENTIFIER = "_cas_stateless_";
+
+    static final String CAS_STATEFUL_IDENTIFIER = "_cas_stateful_";
     /**
      * The Messages.
      */
@@ -83,8 +84,8 @@ public class CasAuthenticationProvider implements AuthenticationProvider,
         }
 
         if (authentication instanceof UsernamePasswordAuthenticationToken
-                && (!CasServiceTicketAuthenticationToken.CAS_STATEFUL_IDENTIFIER
-                .equals(authentication.getPrincipal().toString()) && !CasServiceTicketAuthenticationToken.CAS_STATELESS_IDENTIFIER
+                && (!CAS_STATEFUL_IDENTIFIER
+                .equals(authentication.getPrincipal().toString()) && !CAS_STATELESS_IDENTIFIER
                 .equals(authentication.getPrincipal().toString()))) {
             // UsernamePasswordAuthenticationToken not CAS related
             return null;
@@ -113,7 +114,7 @@ public class CasAuthenticationProvider implements AuthenticationProvider,
         boolean stateless = false;
 
         if (authentication instanceof UsernamePasswordAuthenticationToken
-                && CasServiceTicketAuthenticationToken.CAS_STATELESS_IDENTIFIER.equals(authentication
+                && CAS_STATELESS_IDENTIFIER.equals(authentication
                 .getPrincipal())) {
             stateless = true;
         }
