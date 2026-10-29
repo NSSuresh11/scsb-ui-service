@@ -1,6 +1,6 @@
 package org.recap.security.cas;
 
-import org.jasig.cas.client.validation.TicketValidator;
+import org.apereo.cas.client.validation.TicketValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -11,7 +11,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.cas.ServiceProperties;
 import org.springframework.security.cas.authentication.*;
-import org.springframework.security.cas.web.CasAuthenticationFilter;
+import org.springframework.security.cas.authentication.CasServiceTicketAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.AuthenticationUserDetailsService;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -79,14 +79,14 @@ public class CasAuthenticationProviderTest {
 
     @Test
     public void testAuthenticateNoServiceTicket() {
-        Authentication authentication = new UsernamePasswordAuthenticationToken(CasAuthenticationFilter.CAS_STATELESS_IDENTIFIER, null);
+        Authentication authentication = new UsernamePasswordAuthenticationToken(CasServiceTicketAuthenticationToken.CAS_STATELESS_IDENTIFIER, null);
         assertThrows(BadCredentialsException.class, () -> casAuthenticationProvider.authenticate(authentication));
     }
 
     @Test
     public void testAuthenticateStatelessTokenFromCache() {
         try {
-            Authentication authentication = new UsernamePasswordAuthenticationToken(CasAuthenticationFilter.CAS_STATELESS_IDENTIFIER, "ticket");
+            Authentication authentication = new UsernamePasswordAuthenticationToken(CasServiceTicketAuthenticationToken.CAS_STATELESS_IDENTIFIER, "ticket");
             CasAuthenticationToken casToken = mock(CasAuthenticationToken.class);
             assertEquals(casToken, casAuthenticationProvider.authenticate(authentication));
         } catch (NullPointerException e) {
@@ -97,7 +97,7 @@ public class CasAuthenticationProviderTest {
     @Test
     public void testAuthenticateStatelessTokenNotInCache() {
         try {
-            Authentication authentication = new UsernamePasswordAuthenticationToken(CasAuthenticationFilter.CAS_STATELESS_IDENTIFIER, "ticket");
+            Authentication authentication = new UsernamePasswordAuthenticationToken(org.springframework.security.cas.authentication.CasServiceTicketAuthenticationToken.CAS_STATELESS_IDENTIFIER, "ticket");
             CasAuthenticationToken casToken = mock(CasAuthenticationToken.class);
             ReflectionTestUtils.invokeMethod(casAuthenticationProvider, "authenticateNow", authentication);
             assertEquals(casToken, casAuthenticationProvider.authenticate(authentication));
