@@ -1,5 +1,6 @@
 package org.recap.security;
 
+import lombok.extern.slf4j.Slf4j;
 import org.recap.PropertyKeyConstants;
 import org.recap.ScsbConstants;
 import org.recap.filter.CsrfCookieGeneratorFilter;
@@ -46,6 +47,7 @@ import java.util.Arrays;
 /**
  * Created by sheiks on 30/01/17.
  */
+@Slf4j
 @Configuration
 @EnableMethodSecurity(securedEnabled = true, prePostEnabled = true)
 public class MultiCASAndOAuthSecurityConfiguration {
@@ -185,15 +187,15 @@ public class MultiCASAndOAuthSecurityConfiguration {
         return filterRegistrationBean;
     }
 
-/*    @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         auth
                 .authenticationProvider(casAuthenticationProvider());
-    }*/
+    }
 
     @Bean
     protected AuthenticationManager authenticationManager() throws Exception {
-        return new ProviderManager(Arrays.asList(casAuthenticationProvider()));
+        ProviderManager providerManager = new ProviderManager(Arrays.asList(casAuthenticationProvider()));
+        return providerManager;
     }
 
 
@@ -209,6 +211,7 @@ public class MultiCASAndOAuthSecurityConfiguration {
         casAuthenticationProvider.setServiceProperties(casPropertyProvider.getServiceProperties());
         casAuthenticationProvider.setTicketValidator(cas20ServiceTicketValidator());
         casAuthenticationProvider.setKey("an_id_for_this_auth_provider_only");
+        log.info("casAuthenticationProvider >>>>>>" + casAuthenticationProvider);
         return casAuthenticationProvider;
     }
 
