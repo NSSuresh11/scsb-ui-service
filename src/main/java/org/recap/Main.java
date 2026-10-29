@@ -33,6 +33,7 @@ import java.util.Set;
 /**
  * The type Main.
  */
+@PropertySource("classpath:application.properties")
 @SpringBootApplication(scanBasePackages = {"org.recap.controller", "org.recap.*"}, exclude = {SecurityFilterAutoConfiguration.class})
 public class Main {
 

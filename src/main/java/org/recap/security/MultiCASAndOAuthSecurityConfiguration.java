@@ -19,6 +19,7 @@ import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.cas.authentication.CasAuthenticationProvider;
 import org.springframework.security.cas.web.CasAuthenticationFilter;
 import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
@@ -46,7 +47,7 @@ import java.util.Arrays;
  * Created by sheiks on 30/01/17.
  */
 @Configuration
-@EnableMethodSecurity
+@EnableMethodSecurity(securedEnabled = true, prePostEnabled = true)
 public class MultiCASAndOAuthSecurityConfiguration {
 
     @Value("${" + PropertyKeyConstants.CAS_DEFAULT_URL_PREFIX + "}")
@@ -66,6 +67,9 @@ public class MultiCASAndOAuthSecurityConfiguration {
 
     @Value("${" + ScsbConstants.CSP_VALUE + "}")
     private String cspValue;
+
+    @Value("${" + ScsbConstants.FRAME_ANCESTOR_VALUE + "}")
+    private String frameAncestorValue;
 
     @Value("${security.oauth2.resource.jwt.key-value}")
     private RSAPublicKey rsaPublicKey;
@@ -96,6 +100,9 @@ public class MultiCASAndOAuthSecurityConfiguration {
                 .addFilter(casAuthenticationFilter())
                 .addFilterBefore(reCAPLogoutFilter(), LogoutFilter.class)
                 .addFilterBefore(requestCasGlobalLogoutFilter(), LogoutFilter.class)
+                .csrf(csrf -> csrf
+                .ignoringRequestMatchers("/home", "/saml/acs", "/saml/acs/**")
+        )
 
                 .oauth2Login(o -> o.loginPage(loginPath))
 
@@ -177,6 +184,12 @@ public class MultiCASAndOAuthSecurityConfiguration {
         filterRegistrationBean.addUrlPatterns("/collection/*","/search/*","/request/*","/reports/*","/userRoles/*","/bulkRequest/*","/roles/*","/jobs/*","/openMarcRecordByBibId/*","/admin/*","/dataExport/*","/request-log/*");
         return filterRegistrationBean;
     }
+
+/*    @Override
+    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+        auth
+                .authenticationProvider(casAuthenticationProvider());
+    }*/
 
     @Bean
     protected AuthenticationManager authenticationManager() throws Exception {
