@@ -135,11 +135,6 @@ public class CasAuthenticationProvider implements AuthenticationProvider,
             // Add to cache
             statelessTicketCache.putTicketInCache(result);
         }
-        log.info("CasAuthenticationProvider.authenticate : result : {}", result);
-        log.info("CasAuthenticationProvider.authenticate : result.isAuthenticated() : {}", result.isAuthenticated());
-        log.info("CasAuthenticationProvider.authenticate : result.getCredentials() : {}", result.getCredentials().toString());
-
-
 
         return result;
     }
