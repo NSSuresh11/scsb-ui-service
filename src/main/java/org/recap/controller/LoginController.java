@@ -94,7 +94,9 @@ public class LoginController extends AbstractController {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             String username = auth.getName();
             String institutionFromRequest = request.getParameter("institution");
+            log.info("institutionFromRequest >>>>>>>>>> " + institutionFromRequest);
             String authType = propertyUtil.getPropertyByInstitutionAndKey(institutionFromRequest,  PropertyKeyConstants.ILS.ILS_AUTH_TYPE);
+            log.info("authType >>>>>>>>>> " + authType);
             if (StringUtils.equals(authType, ScsbConstants.AUTH_TYPE_OAUTH)) {
                 if (auth instanceof OAuth2AuthenticationToken oauthToken) {
                     OAuth2User oauth2User = oauthToken.getPrincipal();
@@ -120,6 +122,7 @@ public class LoginController extends AbstractController {
             }
 
             UsernamePasswordToken token = new UsernamePasswordToken(username + ScsbConstants.TOKEN_SPLITER + institutionFromRequest, "", true);
+            log.info("token >>>>>>>> " + token);
             Map<String, Object> resultMap = getUserAuthUtil().doAuthentication(token);
             if(userHasRoles(resultMap)) {
                 if (!(Boolean) resultMap.get(ScsbConstants.IS_USER_AUTHENTICATED)) {
