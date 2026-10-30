@@ -247,7 +247,8 @@ public class MultiCASAndOAuthSecurityConfiguration {
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() throws Exception {
         return (web)->web.ignoring().requestMatchers("/resources/**", "/static/**", "/assets/**", "/index.html", "/**/*.css", "/**/*.js", "/**/*.png", "/**/*.jpg", "/**/*.gif", "/**/*.svg", "/**/favicon.ico","/**/*.bmp","/**/*.jpeg","/**/*.ttf","/**/*.eot","/**/*.svg","/**/*.woff","/**/*.woff2","/images/**").
-                requestMatchers("/collection/**","/search/**","/request/**","/reports/**","/userRoles/**","/bulkRequest/**","/roles/**","/jobs/**","/openMarcRecordByBibId/**","/admin/**","/api/**","/dataExport/**","/validation/**","/actuator/**","/monitoring/**","/request-log/**");
+                requestMatchers("/collection/**","/search/**","/request/**","/reports/**","/userRoles/**","/bulkRequest/**","/roles/**","/jobs/**","/openMarcRecordByBibId/**","/admin/**","/api/**","/dataExport/**","/validation/**","/actuator/**","/monitoring/**","/request-log/**","/", "/home", "/actuator", "/actuator/prometheus", "/login")
+                .requestMatchers("/auth/saml", "/saml/metadata/**", "/saml/acs", "/saml/acs/**");
     }
 
     /**
