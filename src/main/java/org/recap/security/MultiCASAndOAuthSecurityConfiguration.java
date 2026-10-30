@@ -10,34 +10,45 @@ import org.recap.service.CustomUserDetailsService;
 import org.recap.util.UserAuthUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.security.oauth2.client.EnableOAuth2Sso;
-import org.springframework.boot.autoconfigure.security.oauth2.client.OAuth2SsoProperties;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.cas.authentication.CasAuthenticationProvider;
 import org.springframework.security.cas.web.CasAuthenticationFilter;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
-import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.builders.WebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.annotation.web.configurers.SessionManagementConfigurer;
+import org.springframework.security.config.annotation.web.configurers.oauth2.server.resource.OAuth2ResourceServerConfigurer;
 import org.springframework.security.core.userdetails.AuthenticationUserDetailsService;
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
+import org.springframework.security.oauth2.client.web.OAuth2AuthorizedClientRepository;
+import org.springframework.security.oauth2.client.web.reactive.function.client.ServletOAuth2AuthorizedClientExchangeFilterFunction;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
+import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.ExceptionTranslationFilter;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.authentication.logout.LogoutFilter;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.security.web.csrf.CsrfFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.web.reactive.function.client.WebClient;
+
+import java.security.interfaces.RSAPublicKey;
+import java.util.Arrays;
 
 /**
  * Created by sheiks on 30/01/17.
  */
 @Configuration
-@EnableOAuth2Sso
-@EnableGlobalMethodSecurity(securedEnabled = true, prePostEnabled = true)
-public class MultiCASAndOAuthSecurityConfiguration extends WebSecurityConfigurerAdapter {
+@EnableMethodSecurity(securedEnabled = true, prePostEnabled = true)
+public class MultiCASAndOAuthSecurityConfiguration {
 
     @Value("${" + PropertyKeyConstants.CAS_DEFAULT_URL_PREFIX + "}")
     private String casUrlPrefix;
@@ -60,47 +71,70 @@ public class MultiCASAndOAuthSecurityConfiguration extends WebSecurityConfigurer
     @Value("${" + ScsbConstants.FRAME_ANCESTOR_VALUE + "}")
     private String frameAncestorValue;
 
+    @Value("${security.oauth2.resource.jwt.key-value}")
+    private RSAPublicKey rsaPublicKey;
+
     @Autowired
     private CASPropertyProvider casPropertyProvider;
 
     @Autowired
     private UserAuthUtil userAuthUtil;
 
+    @Autowired
+    private ApplicationContext applicationContext;
 
-    @Override
-    protected void configure(HttpSecurity http) throws Exception {
-        // @formatter:off
-        OAuth2SsoProperties sso = getApplicationContext().getBean(OAuth2SsoProperties.class);
 
-        LoginUrlAuthenticationEntryPoint loginUrlAuthenticationEntryPoint = new LoginUrlAuthenticationEntryPoint(sso.getLoginPath());
+
+    @Bean
+    protected SecurityFilterChain configure(HttpSecurity http) throws Exception {
+        String loginPath = "/login";
+
+        LoginUrlAuthenticationEntryPoint loginUrlAuthenticationEntryPoint = new LoginUrlAuthenticationEntryPoint(loginPath);
         SCSBExceptionTranslationFilter SCSBExceptionTranslationFilter = new SCSBExceptionTranslationFilter(casPropertyProvider, loginUrlAuthenticationEntryPoint);
+
         http.addFilterAfter(new CsrfCookieGeneratorFilter(), CsrfFilter.class)
                 .addFilterAfter(new SCSBInstitutionFilter(), CsrfCookieGeneratorFilter.class)
                 .addFilterAfter(SCSBExceptionTranslationFilter, ExceptionTranslationFilter.class)
-                .exceptionHandling()
-                .authenticationEntryPoint(loginUrlAuthenticationEntryPoint).and()
+                .exceptionHandling(ex -> ex.authenticationEntryPoint(loginUrlAuthenticationEntryPoint))
+
                 .addFilter(casAuthenticationFilter())
                 .addFilterBefore(reCAPLogoutFilter(), LogoutFilter.class)
-                .addFilterBefore(requestCasGlobalLogoutFilter(), LogoutFilter.class);
+                .addFilterBefore(requestCasGlobalLogoutFilter(), LogoutFilter.class)
+                .csrf(csrf -> csrf
+                .ignoringRequestMatchers("/home", "/saml/acs", "/saml/acs/**")
+        )
 
-        http.csrf().ignoringAntMatchers("/home", "/saml/acs", "/saml/acs/**");
+                .oauth2Login(o -> o.loginPage(loginPath))
 
-        http.authorizeRequests()
-/*                .antMatchers("/", "/home", "/actuator", "/actuator/prometheus").permitAll()
-                .antMatchers("/auth/saml", "/callback/saml", "/saml/metadata/**").permitAll()*/
-                .antMatchers("/", "/home", "/actuator", "/actuator/prometheus").permitAll()
-                .antMatchers("/auth/saml", "/saml/metadata/**", "/saml/acs", "/saml/acs/**").permitAll()
-                .antMatchers("*").authenticated().anyRequest().authenticated();
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/", "/home", "/actuator", "/actuator/prometheus", "/login").permitAll()
+                        .requestMatchers("/auth/saml", "/saml/metadata/**", "/saml/acs", "/saml/acs/**").permitAll()
+                        .requestMatchers("*").authenticated()
+                        .anyRequest().authenticated()
+                )
+                .oauth2ResourceServer(oauth2 -> oauth2
+                        .jwt(jwt -> jwt.decoder(jwtDecoder())))
 
-        SessionManagementConfigurer<HttpSecurity> httpSecuritySessionManagementConfigurer = http.sessionManagement();
-        httpSecuritySessionManagementConfigurer.invalidSessionUrl("/home");
-        if (cspEnable) {
-            http.headers(headers -> headers.contentSecurityPolicy(contentSecurityPolicy -> contentSecurityPolicy.policyDirectives( "default-src "+ scsbUiUrl + " " + cspValue   + "; frame-ancestors " + " " + frameAncestorValue)));
-        }
-        http.logout().logoutUrl(ScsbConstants.LOG_USER_LOGOUT_URL).logoutSuccessUrl("/").invalidateHttpSession(true)
-                .deleteCookies("JSESSIONID");
-        // @formatter:on
+                .sessionManagement(sm -> sm.invalidSessionUrl("/home"))
+
+                .headers(headers -> {
+                    if (Boolean.TRUE.equals(cspEnable)) {
+                        headers.contentSecurityPolicy(csp ->
+                                csp.policyDirectives("default-src " + scsbUiUrl + " " + cspValue));
+                    }
+                })
+
+                .logout(logout -> logout
+                        .logoutUrl(ScsbConstants.LOG_USER_LOGOUT_URL)
+                        .logoutSuccessUrl("/")
+                        .invalidateHttpSession(true)
+                        .deleteCookies("JSESSIONID")
+                );
+
+
+        return http.build();
     }
+
 
 
     /**
@@ -151,10 +185,15 @@ public class MultiCASAndOAuthSecurityConfiguration extends WebSecurityConfigurer
         return filterRegistrationBean;
     }
 
-    @Override
+/*    @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         auth
                 .authenticationProvider(casAuthenticationProvider());
+    }*/
+
+    @Bean
+    protected AuthenticationManager authenticationManager() throws Exception {
+        return new ProviderManager(Arrays.asList(casAuthenticationProvider()));
     }
 
 
@@ -195,10 +234,10 @@ public class MultiCASAndOAuthSecurityConfiguration extends WebSecurityConfigurer
     }
 
 
-    @Override
-    public void configure(WebSecurity web) throws Exception {
-        web.ignoring().antMatchers("/resources/**", "/static/**", "/assets/**", "/index.html", "/**/*.css", "/**/*.js", "/**/*.png", "/**/*.jpg", "/**/*.gif", "/**/*.svg", "/**/favicon.ico","/**/*.bmp","/**/*.jpeg","/**/*.ttf","/**/*.eot","/**/*.svg","/**/*.woff","/**/*.woff2","/images/**").
-                antMatchers("/collection/**","/search/**","/request/**","/reports/**","/userRoles/**","/bulkRequest/**","/roles/**","/jobs/**","/openMarcRecordByBibId/**","/admin/**","/api/**","/dataExport/**","/validation/**","/actuator/**","/monitoring/**","/request-log/**");
+    @Bean
+    public WebSecurityCustomizer webSecurityCustomizer() throws Exception {
+        return (web)->web.ignoring().requestMatchers("/resources/**", "/static/**", "/assets/**", "/index.html", "/**/*.css", "/**/*.js", "/**/*.png", "/**/*.jpg", "/**/*.gif", "/**/*.svg", "/**/favicon.ico","/**/*.bmp","/**/*.jpeg","/**/*.ttf","/**/*.eot","/**/*.svg","/**/*.woff","/**/*.woff2","/images/**").
+                requestMatchers("/collection/**","/search/**","/request/**","/reports/**","/userRoles/**","/bulkRequest/**","/roles/**","/jobs/**","/openMarcRecordByBibId/**","/admin/**","/api/**","/dataExport/**","/validation/**","/actuator/**","/monitoring/**","/request-log/**");
     }
 
     /**
@@ -210,18 +249,23 @@ public class MultiCASAndOAuthSecurityConfiguration extends WebSecurityConfigurer
     public SCSBHttpSessionEventPublisher httpSessionEventPublisher() {
         return new SCSBHttpSessionEventPublisher();
     }
-/*
+
+
     @Bean
-    public WebMvcConfigurer corsConfigurer() {
-        return new WebMvcConfigurer() {
-            @Override
-            public void addCorsMappings(CorsRegistry registry) {
-                registry.addMapping("/**").allowedMethods("GET", "POST", "PUT", "DELETE")
-                        .allowedOrigins("*")
-                        .allowedHeaders("*");
-            }
-        };
-    }*/
+    WebClient webClient(ClientRegistrationRepository clientRegistrationRepository,
+                        OAuth2AuthorizedClientRepository authorizedClientRepository) {
+        ServletOAuth2AuthorizedClientExchangeFilterFunction oauth2 =
+                new ServletOAuth2AuthorizedClientExchangeFilterFunction(clientRegistrationRepository,
+                        authorizedClientRepository);
+        oauth2.setDefaultOAuth2AuthorizedClient(true);
+        return WebClient.builder()
+                .apply(oauth2.oauth2Configuration())
+                .build();
+    }
+
+    @Bean
+    public JwtDecoder jwtDecoder() {
+        return NimbusJwtDecoder. withPublicKey(this.rsaPublicKey).build();
+    }
 
 }
-

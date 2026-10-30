@@ -10,23 +10,23 @@ import java.io.IOException;
 
 /**
  * Created by rathin maheswaran on 9/7/2020.
- * 
+ *
  * This class is a Custom Provider used for better stack trace readability.
  */
 public class CustomStackTraceJsonProvider extends StackTraceJsonProvider {
 
-	public CustomStackTraceJsonProvider() {
-		super();
-	}
+    public CustomStackTraceJsonProvider() {
+        super();
+    }
 
-	@Override
+    @Override
 	public void writeTo(JsonGenerator generator, ILoggingEvent event) throws IOException {
-		IThrowableProxy throwableProxy = event.getThrowableProxy();
-		if (throwableProxy != null) {
-			String msg = getThrowableConverter().convert(event);
-			String[] lines = msg.split("\\n\\t");
-			JsonWritingUtils.writeStringArrayField(generator, getFieldName(), lines);
+        IThrowableProxy throwableProxy = event.getThrowableProxy();
+        if (throwableProxy != null) {
+            String msg = getThrowableConverter().convert(event);
+            String[] lines = msg.split("\\n\\t");
+            JsonWritingUtils.writeStringArrayField(generator, getFieldName(), lines);
 
-		}
-	}
+        }
+    }
 }

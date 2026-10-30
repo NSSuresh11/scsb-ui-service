@@ -1,5 +1,6 @@
 package org.recap.helper;
 
+import com.fasterxml.jackson.core.JacksonException;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -76,7 +77,7 @@ public class RestTemplateHelper {
                 response.getStatusCode() == HttpStatus.CREATED) {
             try {
                 result = objectMapper.readValue(response.getBody(), javaType);
-            } catch (IOException e) {
+            } catch (JacksonException e) {
                 log.info(e.getMessage());
             }
         } else {

@@ -1,5 +1,6 @@
 package org.recap.controller;
 
+import jakarta.annotation.Nullable;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.recap.PropertyKeyConstants;
@@ -13,8 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.client.RestTemplate;
 
-import javax.annotation.CheckForNull;
-import javax.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpSession;
 import java.util.Map;
 
 @Data
@@ -37,11 +37,11 @@ public class AbstractController {
     private UserAuthUtil userAuthUtil;
 
     /**
-     * Get rest template rest template.
+     * Get rest template .
      *
      * @return the rest template
      */
-    @CheckForNull
+    @Nullable
     public RestTemplate getRestTemplate(){
         return new RestTemplate();
     }
