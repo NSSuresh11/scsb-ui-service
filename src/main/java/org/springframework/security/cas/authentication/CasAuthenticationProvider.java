@@ -78,6 +78,7 @@ public class CasAuthenticationProvider implements AuthenticationProvider,
 
     public Authentication authenticate(Authentication authentication)
             throws AuthenticationException {
+        log.info("Calling authenticate >>>> ");
         if (!supports(authentication.getClass())) {
             return null;
         }
@@ -87,6 +88,8 @@ public class CasAuthenticationProvider implements AuthenticationProvider,
                 .equals(authentication.getPrincipal().toString()) && !CasServiceTicketAuthenticationToken.CAS_STATELESS_IDENTIFIER
                 .equals(authentication.getPrincipal().toString()))) {
             // UsernamePasswordAuthenticationToken not CAS related
+            log.info("Calling UsernamePasswordAuthenticationToken >>>> ");
+
             return null;
         }
 
@@ -94,8 +97,12 @@ public class CasAuthenticationProvider implements AuthenticationProvider,
         if (authentication instanceof CasAuthenticationToken) {
             if (this.key.hashCode() == ((CasAuthenticationToken) authentication)
                     .getKeyHash()) {
+                log.info("Calling CasAuthenticationToken >>>> ");
+
                 return authentication;
             } else {
+                log.info("Calling BadCredentialsException >>>> ");
+
                 throw new BadCredentialsException(
                         messages.getMessage("CasAuthenticationProvider.incorrectKey",
                                 "The presented CasAuthenticationToken does not contain the expected key"));
@@ -105,6 +112,8 @@ public class CasAuthenticationProvider implements AuthenticationProvider,
         // Ensure credentials are presented
         if ((authentication.getCredentials() == null)
                 || "".equals(authentication.getCredentials())) {
+            log.info("Calling BadCredentialsException null >>>> ");
+
             throw new BadCredentialsException(messages.getMessage(
                     "CasAuthenticationProvider.noServiceTicket",
                     "Failed to provide a CAS service ticket to validate"));
@@ -127,6 +136,7 @@ public class CasAuthenticationProvider implements AuthenticationProvider,
         }
 
         if (result == null) {
+            log.info("Calling authenticateNow >>>>>>");
             result = this.authenticateNow(authentication);
             result.setDetails(authentication.getDetails());
         }
@@ -148,6 +158,7 @@ public class CasAuthenticationProvider implements AuthenticationProvider,
             throws AuthenticationException {
         try {
             RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
+            log.info("Inside authenticateNow >>>>>");
             String institution = (String) ((ServletRequestAttributes) requestAttributes).getRequest().getAttribute(ScsbConstants.SCSB_INSTITUTION_CODE);
 
             String casServerUrl = HelperUtil.getBean(PropertyUtil.class).getPropertyByInstitutionAndKey(institution, PropertyKeyConstants.ILS.ILS_AUTH_SERVICE_PREFIX);
@@ -160,6 +171,7 @@ public class CasAuthenticationProvider implements AuthenticationProvider,
                     .getCredentials().toString(), getServiceUrl(authentication));
             final UserDetails userDetails = loadUserByAssertion(assertion);
             userDetailsChecker.check(userDetails);
+            log.info("userDetails >>>>>>> " + userDetails);
             return new CasAuthenticationToken(this.key, userDetails,
                     authentication.getCredentials(),
                     authoritiesMapper.mapAuthorities(userDetails.getAuthorities()),

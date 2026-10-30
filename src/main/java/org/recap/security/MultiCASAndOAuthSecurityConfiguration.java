@@ -16,6 +16,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.cas.authentication.CasAuthenticationProvider;
 import org.springframework.security.cas.web.CasAuthenticationFilter;
@@ -42,7 +43,9 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.security.interfaces.RSAPublicKey;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * Created by sheiks on 30/01/17.
@@ -84,6 +87,8 @@ public class MultiCASAndOAuthSecurityConfiguration {
 
     @Autowired
     private ApplicationContext applicationContext;
+
+    private List<AuthenticationProvider> authenticationProviders = new ArrayList<>();
 
 
 
@@ -187,14 +192,16 @@ public class MultiCASAndOAuthSecurityConfiguration {
         return filterRegistrationBean;
     }
 
+/*    @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         auth
                 .authenticationProvider(casAuthenticationProvider());
-    }
+    }*/
 
-    @Bean
+     @Bean
     protected AuthenticationManager authenticationManager() throws Exception {
         ProviderManager providerManager = new ProviderManager(Arrays.asList(casAuthenticationProvider()));
+        log.info("providerManager >>>>>" + providerManager.toString());
         return providerManager;
     }
 
