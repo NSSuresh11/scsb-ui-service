@@ -39,7 +39,7 @@ import org.springframework.security.web.authentication.LoginUrlAuthenticationEnt
 import org.springframework.security.web.authentication.logout.LogoutFilter;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.security.web.csrf.CsrfFilter;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+//import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.security.interfaces.RSAPublicKey;
@@ -116,11 +116,11 @@ public class MultiCASAndOAuthSecurityConfiguration {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/", "/home", "/actuator", "/actuator/prometheus", "/login").permitAll()
                         .requestMatchers("/auth/saml", "/saml/metadata/**", "/saml/acs", "/saml/acs/**").permitAll()
-                        .requestMatchers("*").authenticated()
+                        .requestMatchers("/*","/**").authenticated()
                         .anyRequest().authenticated()
                 )
-                .oauth2ResourceServer(oauth2 -> oauth2
-                        .jwt(jwt -> jwt.decoder(jwtDecoder())))
+      /*          .oauth2ResourceServer(oauth2 -> oauth2
+                        .jwt(jwt -> jwt.decoder(jwtDecoder())))*/
 
                 .sessionManagement(sm -> sm.invalidSessionUrl("/home"))
 
@@ -155,7 +155,7 @@ public class MultiCASAndOAuthSecurityConfiguration {
         SCSBSimpleUrlLogoutSuccessHandler SCSBSimpleUrlLogoutSuccessHandler = new SCSBSimpleUrlLogoutSuccessHandler(userAuthUtil);
         SCSBSimpleUrlLogoutSuccessHandler.setDefaultTargetUrl(logoutSuccessUrl);
         LogoutFilter logoutFilter = new LogoutFilter(SCSBSimpleUrlLogoutSuccessHandler, new SecurityContextLogoutHandler());
-        logoutFilter.setLogoutRequestMatcher(new AntPathRequestMatcher("/logout", "GET"));
+      //  logoutFilter.setLogoutRequestMatcher(new AntPathRequestMatcher("/logout", "GET"));
         return logoutFilter;
     }
 

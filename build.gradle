@@ -1,7 +1,7 @@
 buildscript {
     ext {
-        springBootVersion = '3.1.2'
-        set('springCloudVersion', "2022.0.4")
+        springBootVersion = '4.0.7'
+        set('springCloudVersion', "2025.1.2")
     }
     repositories {
         mavenCentral()
@@ -12,9 +12,9 @@ buildscript {
 }
 
 plugins {
-    id 'org.springframework.boot' version '3.1.2'
-    id 'io.spring.dependency-management' version '1.1.2'
-    id "org.sonarqube" version "6.0.1.5171"
+    id 'org.springframework.boot' version '4.0.7'
+    id 'io.spring.dependency-management' version '1.1.7'
+    id "org.sonarqube" version "6.3.1.5724"
 }
 
 apply plugin: 'java'
@@ -32,78 +32,94 @@ bootJar {
     archiveVersion = '0.0.1-SNAPSHOT'
     // layered()
 }
+
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
+        languageVersion = JavaLanguageVersion.of(25)
     }
 }
-
 repositories {
     mavenCentral()
 }
 
 
 dependencies {
-    implementation fileTree(dir: '/data/commonjar', include: '*2.9.jar')
-    implementation fileTree(dir: '/data/commonjar', include: '*base-1.0.jar')
+    implementation fileTree(dir: '/data/commonjar', include: '*3.2.jar')
     implementation 'org.springframework.cloud:spring-cloud-starter-config'
     implementation 'org.springframework.cloud:spring-cloud-starter-bus-amqp'
     implementation 'org.springframework.cloud:spring-cloud-starter-bootstrap'
-    implementation group: 'org.json', name: 'json', version: '20230618'
-    implementation group: 'com.google.code.gson', name: 'gson', version: '2.11.0'
+    implementation 'org.json:json:20260719'
+    implementation 'com.google.code.gson:gson:2.14.0'
 
-    implementation('commons-beanutils:commons-beanutils:1.9.4')
-    implementation("commons-io:commons-io:2.18.0")
+    implementation('commons-beanutils:commons-beanutils:1.11.0')
     implementation('org.springframework.boot:spring-boot-starter-data-jpa')
     implementation("org.springframework.boot:spring-boot-starter-data-rest")
     implementation('org.springframework.boot:spring-boot-starter-web-services')
     implementation('org.springframework.boot:spring-boot-starter-security')
     implementation("org.springframework.security:spring-security-jwt:1.1.1.RELEASE")
-    implementation("org.springframework.security:spring-security-cas:6.1.0")
-    // implementation("org.springframework.security:spring-security-config:5.7.10")
+    implementation('org.springframework.security:spring-security-cas:7.1.2')
+    implementation("org.springframework.security:spring-security-web:7.1.2")
+    implementation("org.springframework.security:spring-security-config:7.1.2")
+    implementation("org.springframework.security:spring-security-core:7.1.2")
+    implementation 'org.springframework.boot:spring-boot-starter-json'
+
+
+
 //	implementation('org.springframework.security.oauth.boot:spring-security-oauth2-autoconfigure:2.6.8')
 //	implementation('org.springframework.security.oauth:spring-security-oauth2:2.5.2.RELEASE')
-    implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server:3.1.0")
-    implementation("org.springframework.boot:spring-boot-starter-oauth2-client:3.1.0")
+    implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
 
-    implementation('org.springframework.security:spring-security-oauth2-client:6.1.0')
+    implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
+
+    //implementation('org.springframework.security:spring-security-oauth2-client:6.3.0')
 //	implementation 'org.springframework.security:spring-security-core:6.1.0'
     implementation 'io.zipkin.brave:brave:6.0.3'
     implementation 'javax.servlet:javax.servlet-api:4.0.1'
     implementation 'org.glassfish:jakarta.faces:3.0.0'
     implementation('org.springframework.data:spring-data-solr:4.3.15')
             {exclude module: 'solr-solrj'; exclude module: 'solr-data-commons'; exclude module: 'spring-data-jpa'}
-    implementation('org.codehaus.jettison:jettison:1.5.3')
+    implementation('org.codehaus.jettison:jettison:1.5.4')
+    implementation 'javax.servlet:javax.servlet-api:4.0.1'
     implementation('org.springframework.data:spring-data-commons')
-    implementation('com.google.guava:guava:31.1-jre') {exclude module: "solr-solrj"}
-    implementation('org.apache.solr:solr-solrj:9.6.1')
+    implementation("org.springframework.data:spring-data-jpa:4.0.7")
+    implementation('com.google.guava:guava:33.6.0-jre') {exclude module: "solr-solrj"}
+    implementation('org.apache.solr:solr-solrj:9.10.1')
+    implementation("commons-io:commons-io:2.22.0")
     implementation('info.freelibrary:freelib-marc4j:2.6.12')
     implementation(group: 'net.sourceforge.javacsv', name: 'javacsv', version: '2.0')
     implementation('io.springfox:springfox-swagger2:3.0.0')
-  //  implementation('org.apache.shiro:shiro-core:1.12.0')
+    implementation('org.apache.shiro:shiro-core:1.12.0')
     implementation('javax.validation:validation-api:2.0.1.Final')
-    implementation('org.projectlombok:lombok:1.18.36')
+    implementation('org.projectlombok:lombok:1.18.46')
     implementation 'io.micrometer:micrometer-registry-prometheus'
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'org.springframework.boot:spring-boot-starter-web'
-    //implementation 'org.springframework.cloud:spring-cloud-starter-sleuth'
     implementation 'org.springframework.amqp:spring-rabbit'
-    implementation 'net.logstash.logback:logstash-logback-encoder:8.0'
-    annotationProcessor('org.projectlombok:lombok:1.18.36')
-    testImplementation('org.projectlombok:lombok:1.18.36')
-    testAnnotationProcessor('org.projectlombok:lombok:1.18.36')
-    implementation group: 'com.mysql', name: 'mysql-connector-j', version: '9.1.0'
-    testImplementation group: 'org.mockito', name: 'mockito-core', version: '5.5.0'
-    testImplementation group: 'org.powermock', name: 'powermock-api-mockito2', version: '2.0.9'
-    testImplementation group: 'org.powermock', name: 'powermock-module-junit4', version: '2.0.9'
-    testImplementation 'junit:junit:4.13.2'
-    testImplementation('org.springframework.boot:spring-boot-starter-test')
+    implementation 'net.logstash.logback:logstash-logback-encoder:9.0'
+    annotationProcessor('org.projectlombok:lombok:1.18.46')
+    testImplementation('org.projectlombok:lombok:1.18.46')
+    testAnnotationProcessor('org.projectlombok:lombok:1.18.46')
+    implementation('com.mysql:mysql-connector-j:9.1.0')
+
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.mockito:mockito-core:5.23.0'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:6.1.0'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:6.1.0'
+    testImplementation 'net.bytebuddy:byte-buddy:1.17.7'
+    testImplementation 'net.bytebuddy:byte-buddy-agent:1.17.7'
+
 }
 
 configurations.all {
     resolutionStrategy.eachDependency { DependencyResolveDetails details ->
         if (details.requested.group == 'org.apache.logging.log4j') {
-            details.useVersion '2.20.0'
+            details.useVersion '2.26.1'
+        }
+        if (details.requested.group == 'org.junit.platform') {
+            details.useVersion '6.1.0'
+        }
+        if (details.requested.group == 'org.junit.jupiter') {
+            details.useVersion '6.1.0'
         }
     }
 }
@@ -126,6 +142,7 @@ test {
 }
 
 test{
+    useJUnitPlatform()
     jvmArgs "-Dnet.bytebuddy.experimental=true"
 }
 
@@ -138,7 +155,7 @@ jacocoTestReport {
 }
 
 jacoco {
-    toolVersion = "0.8.12"
+    toolVersion = "0.8.10"
     reportsDirectory = layout.buildDirectory.dir('customJacocoReportDir')
 }
 
