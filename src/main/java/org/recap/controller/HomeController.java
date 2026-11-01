@@ -36,8 +36,8 @@ public class HomeController extends AbstractController {
     @Autowired
     private InstitutionDetailsRepository institutionDetailsRepository;
 
-    @Autowired
-    private TokenStore tokenStore;
+/*    @Autowired
+    private TokenStore tokenStore;*/
 
     @Autowired
     private UserInstitutionCache userInstitutionCache;

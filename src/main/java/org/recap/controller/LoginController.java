@@ -35,9 +35,9 @@ import java.util.Map;
 public class LoginController extends AbstractController {
 
 
-
+/*
     @Autowired
-    private TokenStore tokenStore;
+    private TokenStore tokenStore;*/
 
     @Autowired
     private UserInstitutionCache userInstitutionCache;
@@ -91,17 +91,17 @@ public class LoginController extends AbstractController {
             if (StringUtils.equals(authType, ScsbConstants.AUTH_TYPE_OAUTH)) {
                 OAuth2Authentication oauth = (OAuth2Authentication) auth;
                 String tokenString = ((OAuth2AuthenticationDetails) oauth.getDetails()).getTokenValue();
-                OAuth2AccessToken accessToken = tokenStore.readAccessToken(tokenString);
+              //  OAuth2AccessToken accessToken = tokenStore.readAccessToken(tokenString);
 
-                Map<String, Object> additionalInformation = accessToken.getAdditionalInformation();
-                if (null != additionalInformation) {
-                    username = (String) additionalInformation.get("sub");
+            //    Map<String, Object> additionalInformation = accessToken.getAdditionalInformation();
+              //  if (null != additionalInformation) {
+             //       username = (String) additionalInformation.get("sub");
                     Cookie cookieUserName = new Cookie(ScsbConstants.USER_NAME, username);
                     cookieUserName.setHttpOnly(true);
                     cookieUserName.setSecure(true);
                     HelperUtil.setCookieProperties(cookieUserName);
                     response.addCookie(cookieUserName);
-                }
+           //     }
             }
             UsernamePasswordToken token = new UsernamePasswordToken(username + ScsbConstants.TOKEN_SPLITER + institutionFromRequest, "", true);
             Map<String, Object> resultMap = getUserAuthUtil().doAuthentication(token);
