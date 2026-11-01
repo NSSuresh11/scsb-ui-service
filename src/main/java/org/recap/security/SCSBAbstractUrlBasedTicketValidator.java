@@ -3,12 +3,12 @@ package org.recap.security;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.extern.slf4j.Slf4j;
-import org.jasig.cas.client.ssl.HttpURLConnectionFactory;
-import org.jasig.cas.client.ssl.HttpsURLConnectionFactory;
-import org.jasig.cas.client.util.CommonUtils;
-import org.jasig.cas.client.validation.Assertion;
-import org.jasig.cas.client.validation.TicketValidationException;
-import org.jasig.cas.client.validation.TicketValidator;
+import org.apereo.cas.client.ssl.HttpURLConnectionFactory;
+import org.apereo.cas.client.ssl.HttpsURLConnectionFactory;
+import org.apereo.cas.client.util.CommonUtils;
+import org.apereo.cas.client.validation.Assertion;
+import org.apereo.cas.client.validation.TicketValidationException;
+import org.apereo.cas.client.validation.TicketValidator;
 import org.recap.ScsbCommonConstants;
 
 

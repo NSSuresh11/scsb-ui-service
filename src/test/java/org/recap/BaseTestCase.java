@@ -10,7 +10,7 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.servlet.http.HttpSessionEvent;
+import jakarta.servlet.http.HttpSessionEvent;
 
 @ExtendWith({SpringExtension.class})
 @SpringBootTest(classes = Main.class)

@@ -4,7 +4,7 @@ import org.recap.ScsbConstants;
 import org.recap.util.HelperUtil;
 import org.springframework.security.web.session.HttpSessionEventPublisher;
 
-import javax.servlet.http.HttpSessionEvent;
+import jakarta.servlet.http.HttpSessionEvent;
 
 /**
  * Created by sheiks on 27/03/17.

@@ -15,15 +15,20 @@ import org.springframework.boot.autoconfigure.security.oauth2.client.OAuth2SsoPr
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.cas.authentication.CasAuthenticationProvider;
 import org.springframework.security.cas.web.CasAuthenticationFilter;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+import org.springframework.security.config.annotation.web.WebSecurityConfigurer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.annotation.web.configurers.SessionManagementConfigurer;
 import org.springframework.security.core.userdetails.AuthenticationUserDetailsService;
+import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.ExceptionTranslationFilter;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.authentication.logout.LogoutFilter;
@@ -31,13 +36,14 @@ import org.springframework.security.web.authentication.logout.SecurityContextLog
 import org.springframework.security.web.csrf.CsrfFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
+import java.util.Arrays;
+
 /**
  * Created by sheiks on 30/01/17.
  */
 @Configuration
-@EnableOAuth2Sso
-@EnableGlobalMethodSecurity(securedEnabled = true, prePostEnabled = true)
-public class MultiCASAndOAuthSecurityConfiguration extends WebSecurityConfigurerAdapter {
+@EnableMethodSecurity(securedEnabled = true, prePostEnabled = true)
+public class MultiCASAndOAuthSecurityConfiguration  {
 
     @Value("${" + PropertyKeyConstants.CAS_DEFAULT_URL_PREFIX + "}")
     private String casUrlPrefix;
@@ -67,12 +73,11 @@ public class MultiCASAndOAuthSecurityConfiguration extends WebSecurityConfigurer
     private UserAuthUtil userAuthUtil;
 
 
-    @Override
-    protected void configure(HttpSecurity http) throws Exception {
-        // @formatter:off
-        OAuth2SsoProperties sso = getApplicationContext().getBean(OAuth2SsoProperties.class);
+    @Bean
+    protected SecurityFilterChain configure(HttpSecurity http) throws Exception {
+        String loginPath = "/login";
 
-        LoginUrlAuthenticationEntryPoint loginUrlAuthenticationEntryPoint = new LoginUrlAuthenticationEntryPoint(sso.getLoginPath());
+        LoginUrlAuthenticationEntryPoint loginUrlAuthenticationEntryPoint = new LoginUrlAuthenticationEntryPoint(loginPath);
         SCSBExceptionTranslationFilter SCSBExceptionTranslationFilter = new SCSBExceptionTranslationFilter(casPropertyProvider, loginUrlAuthenticationEntryPoint);
         http.addFilterAfter(new CsrfCookieGeneratorFilter(), CsrfFilter.class)
                 .addFilterAfter(new SCSBInstitutionFilter(), CsrfCookieGeneratorFilter.class)
@@ -83,14 +88,14 @@ public class MultiCASAndOAuthSecurityConfiguration extends WebSecurityConfigurer
                 .addFilterBefore(reCAPLogoutFilter(), LogoutFilter.class)
                 .addFilterBefore(requestCasGlobalLogoutFilter(), LogoutFilter.class);
 
-        http.csrf().ignoringAntMatchers("/home", "/saml/acs", "/saml/acs/**");
+        http.csrf().ignoringRequestMatchers("/home", "/saml/acs", "/saml/acs/**");
 
         http.authorizeRequests()
 /*                .antMatchers("/", "/home", "/actuator", "/actuator/prometheus").permitAll()
                 .antMatchers("/auth/saml", "/callback/saml", "/saml/metadata/**").permitAll()*/
-                .antMatchers("/", "/home", "/actuator", "/actuator/prometheus").permitAll()
-                .antMatchers("/auth/saml", "/saml/metadata/**", "/saml/acs", "/saml/acs/**").permitAll()
-                .antMatchers("*").authenticated().anyRequest().authenticated();
+                .requestMatchers("/", "/home", "/actuator", "/actuator/prometheus").permitAll()
+                .requestMatchers("/auth/saml", "/saml/metadata/**", "/saml/acs", "/saml/acs/**").permitAll()
+                .requestMatchers("*").authenticated().anyRequest().authenticated();
 
         SessionManagementConfigurer<HttpSecurity> httpSecuritySessionManagementConfigurer = http.sessionManagement();
         httpSecuritySessionManagementConfigurer.invalidSessionUrl("/home");
@@ -100,6 +105,8 @@ public class MultiCASAndOAuthSecurityConfiguration extends WebSecurityConfigurer
         http.logout().logoutUrl(ScsbConstants.LOG_USER_LOGOUT_URL).logoutSuccessUrl("/").invalidateHttpSession(true)
                 .deleteCookies("JSESSIONID");
         // @formatter:on
+        return http.build();
+
     }
 
 
@@ -151,12 +158,16 @@ public class MultiCASAndOAuthSecurityConfiguration extends WebSecurityConfigurer
         return filterRegistrationBean;
     }
 
-    @Override
+ /*   @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         auth
                 .authenticationProvider(casAuthenticationProvider());
-    }
+    }*/
 
+    @Bean
+    protected AuthenticationManager authenticationManager() throws Exception {
+        return new ProviderManager(Arrays.asList(casAuthenticationProvider()));
+    }
 
     /**
      * Register CAS authentication provider and set properties
@@ -195,10 +206,11 @@ public class MultiCASAndOAuthSecurityConfiguration extends WebSecurityConfigurer
     }
 
 
-    @Override
-    public void configure(WebSecurity web) throws Exception {
-        web.ignoring().antMatchers("/resources/**", "/static/**", "/assets/**", "/index.html", "/**/*.css", "/**/*.js", "/**/*.png", "/**/*.jpg", "/**/*.gif", "/**/*.svg", "/**/favicon.ico","/**/*.bmp","/**/*.jpeg","/**/*.ttf","/**/*.eot","/**/*.svg","/**/*.woff","/**/*.woff2","/images/**").
-                antMatchers("/collection/**","/search/**","/request/**","/reports/**","/userRoles/**","/bulkRequest/**","/roles/**","/jobs/**","/openMarcRecordByBibId/**","/admin/**","/api/**","/dataExport/**","/validation/**","/actuator/**","/monitoring/**","/request-log/**");
+    @Bean
+    public WebSecurityCustomizer webSecurityCustomizer() throws Exception {
+        return (web)->web.ignoring().requestMatchers("/resources/**", "/static/**", "/assets/**", "/index.html", "/**/*.css", "/**/*.js", "/**/*.png", "/**/*.jpg", "/**/*.gif", "/**/*.svg", "/**/favicon.ico","/**/*.bmp","/**/*.jpeg","/**/*.ttf","/**/*.eot","/**/*.svg","/**/*.woff","/**/*.woff2","/images/**").
+                requestMatchers("/collection/**","/search/**","/request/**","/reports/**","/userRoles/**","/bulkRequest/**","/roles/**","/jobs/**","/openMarcRecordByBibId/**","/admin/**","/api/**","/dataExport/**","/validation/**","/actuator/**","/monitoring/**","/request-log/**","/", "/home", "/actuator", "/actuator/prometheus", "/login")
+                .requestMatchers("/auth/saml", "/saml/metadata/**", "/saml/acs", "/saml/acs/**");
     }
 
     /**

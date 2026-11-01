@@ -13,8 +13,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.client.RestTemplate;
 
-import javax.annotation.CheckForNull;
-import javax.servlet.http.HttpSession;
+import jakarta.annotation.Nonnull;
+import jakarta.servlet.http.HttpSession;
 import java.util.Map;
 
 @Data
@@ -41,7 +41,7 @@ public class AbstractController {
      *
      * @return the rest template
      */
-    @CheckForNull
+    @Nonnull
     public RestTemplate getRestTemplate(){
         return new RestTemplate();
     }
