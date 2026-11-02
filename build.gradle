@@ -63,7 +63,12 @@ dependencies {
 //	implementation('org.springframework.security:spring-security-cas')
    // implementation 'org.springframework.security:spring-security-cas-client:3.0.0.RELEASE'
     //implementation 'org.springframework.security:spring-security-cas:3.0.0.RELEASE'
-    implementation('org.springframework.security:spring-security-cas:6.1.0')
+  //  implementation('org.springframework.security:spring-security-cas:6.1.0')
+    implementation('org.springframework.security:spring-security-cas:7.1.0')
+    implementation("org.apereo.cas.client:cas-client-core:4.1.1")
+    implementation("org.apereo.cas.client:cas-client:4.1.1")
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+
 
 
     implementation('org.springframework.security.oauth.boot:spring-security-oauth2-autoconfigure:2.6.8')
