@@ -60,11 +60,10 @@ dependencies {
 	implementation('org.springframework.boot:spring-boot-starter-web-services')
 	implementation('org.springframework.boot:spring-boot-starter-security')
 	implementation('org.springframework.security:spring-security-jwt')
-//	implementation('org.springframework.security:spring-security-cas')
+	implementation('org.springframework.security:spring-security-cas:5.7.11')
    // implementation 'org.springframework.security:spring-security-cas-client:3.0.0.RELEASE'
     //implementation 'org.springframework.security:spring-security-cas:3.0.0.RELEASE'
   //  implementation('org.springframework.security:spring-security-cas:6.1.0')
-    implementation('org.springframework.security:spring-security-cas:6.1.0')
 
 
 
