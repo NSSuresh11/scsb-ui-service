@@ -1,21 +1,3 @@
-/**
- * Licensed to Apereo under one or more contributor license
- * agreements. See the NOTICE file distributed with this work
- * for additional information regarding copyright ownership.
- * Apereo licenses this file to you under the Apache License,
- * Version 2.0 (the "License"); you may not use this file
- * except in compliance with the License.  You may obtain a
- * copy of the License at the following location:
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
- */
 package org.jasig.cas.client.util;
 
 import org.jasig.cas.client.Protocol;
@@ -28,20 +10,6 @@ import org.jasig.cas.client.configuration.ConfigurationKeys;
 
 import java.util.Arrays;
 
-/**
- *  Abstract filter that contains code that is common to all CAS filters.
- *  <p>
- * The following filter options can be configured (either at the context-level or filter-level).
- * <ul>
- * <li><code>serverName</code> - the name of the CAS client server, in the format: localhost:8080 or localhost:8443 or localhost or https://localhost:8443</li>
- * <li><code>service</code> - the completely qualified service url, i.e. https://localhost/cas-client/app</li>
- * </ul>
- * <p>Please note that one of the two above parameters must be set.</p>
- *
- * @author Scott Battaglia
- * @author Misagh Moayyed
- * @since 3.1
- */
 public abstract class AbstractCasFilter extends AbstractConfigurationFilter {
 
     /** Represents the constant for where the assertion will be located in memory. */
