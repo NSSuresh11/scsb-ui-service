@@ -30,6 +30,7 @@ import org.slf4j.LoggerFactory;
 import javax.net.ssl.SSLException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -37,7 +38,11 @@ import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Common utilities so that we don't need to include Commons Lang.
@@ -69,8 +74,8 @@ public final class CommonUtils {
             serviceParameterSet.add(protocol.getServiceParameterName());
         }
         SERVICE_PARAMETER_NAMES = serviceParameterSet.toString()
-            .replaceAll("\\[|\\]", "")
-            .replaceAll("\\s", "");
+                .replaceAll("\\[|\\]", "")
+                .replaceAll("\\s", "");
     }
 
     private CommonUtils() {
@@ -188,8 +193,8 @@ public final class CommonUtils {
     public static String constructRedirectUrl(final String casServerLoginUrl, final String serviceParameterName,
                                               final String serviceUrl, final boolean renew, final boolean gateway, final String method) {
         return casServerLoginUrl + (casServerLoginUrl.contains("?") ? "&" : "?") + serviceParameterName + "="
-            + urlEncode(serviceUrl) + (renew ? "&renew=true" : "") + (gateway ? "&gateway=true" : "")
-            + (method != null ? "&method=" + method : "");
+                + urlEncode(serviceUrl) + (renew ? "&renew=true" : "") + (gateway ? "&gateway=true" : "")
+                + (method != null ? "&method=" + method : "");
     }
 
     /**
@@ -223,7 +228,7 @@ public final class CommonUtils {
 
     public static void readAndRespondToProxyReceptorRequest(final HttpServletRequest request,
                                                             final HttpServletResponse response, final ProxyGrantingTicketStorage proxyGrantingTicketStorage)
-        throws IOException {
+            throws IOException {
         final String proxyGrantingTicketIou = request.getParameter(PARAM_PROXY_GRANTING_TICKET_IOU);
 
         final String proxyGrantingTicket = request.getParameter(PARAM_PROXY_GRANTING_TICKET);
@@ -234,12 +239,12 @@ public final class CommonUtils {
         }
 
         LOGGER.debug("Received proxyGrantingTicketId [{}] for proxyGrantingTicketIou [{}]", proxyGrantingTicket,
-            proxyGrantingTicketIou);
+                proxyGrantingTicketIou);
 
         proxyGrantingTicketStorage.save(proxyGrantingTicketIou, proxyGrantingTicket);
 
         LOGGER.debug("Successfully saved proxyGrantingTicketId [{}] for proxyGrantingTicketIou [{}]",
-            proxyGrantingTicket, proxyGrantingTicketIou);
+                proxyGrantingTicket, proxyGrantingTicketIou);
 
         response.getWriter().write("<?xml version=\"1.0\"?>");
         response.getWriter().write("<casClient:proxySuccess xmlns:casClient=\"http://www.yale.edu/tp/casClient\" />");
@@ -299,7 +304,7 @@ public final class CommonUtils {
                                              final String service, final String serverNames,
                                              final String artifactParameterName, final boolean encode) {
         return constructServiceUrl(request, response, service, serverNames, SERVICE_PARAMETER_NAMES
-            , artifactParameterName, encode);
+                , artifactParameterName, encode);
     }
 
     /**
@@ -393,7 +398,7 @@ public final class CommonUtils {
             return request.getParameter(parameter);
         }
         return request.getQueryString() == null || !request.getQueryString().contains(parameter) ? null : request
-            .getParameter(parameter);
+                .getParameter(parameter);
     }
 
     public static String safeGetParameter(final HttpServletRequest request, final String parameter) {
@@ -458,7 +463,7 @@ public final class CommonUtils {
             throw new RuntimeException(e);
         } catch (final IOException e) {
             LOGGER.error("Error getting response from host: [{}] with path: [{}] and protocol: [{}] Error Message: {}",
-                constructedUrl.getHost(), constructedUrl.getPath(), constructedUrl.getProtocol(), e.getMessage(), e);
+                    constructedUrl.getHost(), constructedUrl.getPath(), constructedUrl.getProtocol(), e.getMessage(), e);
             throw new RuntimeException(e);
         } finally {
             closeQuietly(in);
@@ -494,7 +499,7 @@ public final class CommonUtils {
     }
 
     /**
-     * Unconditionally close a {@link Closeable}. Equivalent to {@link Closeable#close()}close(), except any exceptions
+     * Unconditionally close a {@link Closeable}. Equivalent to {@link java.io.Closeable#close()}close(), except any exceptions
      * will be ignored. This is typically used in finally blocks.
      * @param resource the resource to close
      */
@@ -592,11 +597,11 @@ public final class CommonUtils {
             case 1: {
                 final char ch0 = str.charAt(0);
                 if (ch0 == 'y' || ch0 == 'Y' ||
-                    ch0 == 't' || ch0 == 'T') {
+                        ch0 == 't' || ch0 == 'T') {
                     return Boolean.TRUE;
                 }
                 if (ch0 == 'n' || ch0 == 'N' ||
-                    ch0 == 'f' || ch0 == 'F') {
+                        ch0 == 'f' || ch0 == 'F') {
                     return Boolean.FALSE;
                 }
                 break;
@@ -605,11 +610,11 @@ public final class CommonUtils {
                 final char ch0 = str.charAt(0);
                 final char ch1 = str.charAt(1);
                 if ((ch0 == 'o' || ch0 == 'O') &&
-                    (ch1 == 'n' || ch1 == 'N')) {
+                        (ch1 == 'n' || ch1 == 'N')) {
                     return Boolean.TRUE;
                 }
                 if ((ch0 == 'n' || ch0 == 'N') &&
-                    (ch1 == 'o' || ch1 == 'O')) {
+                        (ch1 == 'o' || ch1 == 'O')) {
                     return Boolean.FALSE;
                 }
                 break;
@@ -619,13 +624,13 @@ public final class CommonUtils {
                 final char ch1 = str.charAt(1);
                 final char ch2 = str.charAt(2);
                 if ((ch0 == 'y' || ch0 == 'Y') &&
-                    (ch1 == 'e' || ch1 == 'E') &&
-                    (ch2 == 's' || ch2 == 'S')) {
+                        (ch1 == 'e' || ch1 == 'E') &&
+                        (ch2 == 's' || ch2 == 'S')) {
                     return Boolean.TRUE;
                 }
                 if ((ch0 == 'o' || ch0 == 'O') &&
-                    (ch1 == 'f' || ch1 == 'F') &&
-                    (ch2 == 'f' || ch2 == 'F')) {
+                        (ch1 == 'f' || ch1 == 'F') &&
+                        (ch2 == 'f' || ch2 == 'F')) {
                     return Boolean.FALSE;
                 }
                 break;
@@ -636,9 +641,9 @@ public final class CommonUtils {
                 final char ch2 = str.charAt(2);
                 final char ch3 = str.charAt(3);
                 if ((ch0 == 't' || ch0 == 'T') &&
-                    (ch1 == 'r' || ch1 == 'R') &&
-                    (ch2 == 'u' || ch2 == 'U') &&
-                    (ch3 == 'e' || ch3 == 'E')) {
+                        (ch1 == 'r' || ch1 == 'R') &&
+                        (ch2 == 'u' || ch2 == 'U') &&
+                        (ch3 == 'e' || ch3 == 'E')) {
                     return Boolean.TRUE;
                 }
                 break;
@@ -650,10 +655,10 @@ public final class CommonUtils {
                 final char ch3 = str.charAt(3);
                 final char ch4 = str.charAt(4);
                 if ((ch0 == 'f' || ch0 == 'F') &&
-                    (ch1 == 'a' || ch1 == 'A') &&
-                    (ch2 == 'l' || ch2 == 'L') &&
-                    (ch3 == 's' || ch3 == 'S') &&
-                    (ch4 == 'e' || ch4 == 'E')) {
+                        (ch1 == 'a' || ch1 == 'A') &&
+                        (ch2 == 'l' || ch2 == 'L') &&
+                        (ch3 == 's' || ch3 == 'S') &&
+                        (ch4 == 'e' || ch4 == 'E')) {
                     return Boolean.FALSE;
                 }
                 break;
