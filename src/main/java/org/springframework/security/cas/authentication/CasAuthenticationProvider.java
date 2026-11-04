@@ -64,7 +64,7 @@ public class CasAuthenticationProvider implements AuthenticationProvider,
 
     // ~ Methods
     // ========================================================================================================
-
+    @Override
     public void afterPropertiesSet() throws Exception {
         Assert.notNull(this.authenticationUserDetailsService,
                 "An authenticationUserDetailsService must be set");
@@ -76,15 +76,14 @@ public class CasAuthenticationProvider implements AuthenticationProvider,
         Assert.notNull(this.messages, "A message source must be set");
     }
 
-    public Authentication authenticate(Authentication authentication)
-            throws AuthenticationException {
+	@Override
+	public Authentication authenticate(Authentication authentication) throws AuthenticationException {
         if (!supports(authentication.getClass())) {
             return null;
         }
-
         if (authentication instanceof UsernamePasswordAuthenticationToken
-                && (!CasAuthenticationFilter.CAS_STATEFUL_IDENTIFIER
-                .equals(authentication.getPrincipal().toString()) && !CasAuthenticationFilter.CAS_STATELESS_IDENTIFIER
+				&& (!CasAuthenticationFilter.CAS_STATEFUL_IDENTIFIER.equals(authentication.getPrincipal().toString())
+						&& !CasAuthenticationFilter.CAS_STATELESS_IDENTIFIER
                 .equals(authentication.getPrincipal().toString()))) {
             // UsernamePasswordAuthenticationToken not CAS related
             return null;
@@ -301,6 +300,7 @@ public class CasAuthenticationProvider implements AuthenticationProvider,
         this.ticketValidator = ticketValidator;
     }
 
+    @Override
     public void setMessageSource(final MessageSource messageSource) {
         this.messages = new MessageSourceAccessor(messageSource);
     }
@@ -314,6 +314,7 @@ public class CasAuthenticationProvider implements AuthenticationProvider,
         this.authoritiesMapper = authoritiesMapper;
     }
 
+    @Override
     public boolean supports(final Class<?> authentication) {
         return (UsernamePasswordAuthenticationToken.class
                 .isAssignableFrom(authentication))
