@@ -1,20 +1,17 @@
 package org.springframework.security.cas.authentication;
 
 import lombok.extern.slf4j.Slf4j;
-import org.jasig.cas.client.proxy.Cas20ProxyRetriever;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jasig.cas.client.validation.Assertion;
 import org.jasig.cas.client.validation.TicketValidationException;
 import org.jasig.cas.client.validation.TicketValidator;
-import org.recap.PropertyKeyConstants;
-import org.recap.ScsbConstants;
-import org.recap.security.SCSBCas20ServiceTicketValidator;
-import org.recap.util.HelperUtil;
-import org.recap.util.PropertyUtil;
+
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.MessageSource;
 import org.springframework.context.MessageSourceAware;
-import org.springframework.context.MessageSourceAware;
 import org.springframework.context.support.MessageSourceAccessor;
+import org.springframework.core.log.LogMessage;
 import org.springframework.security.authentication.AccountStatusUserDetailsChecker;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -33,143 +30,99 @@ import org.springframework.security.core.userdetails.UserDetailsByNameServiceWra
 import org.springframework.security.core.userdetails.UserDetailsChecker;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.util.Assert;
-import org.springframework.web.context.request.RequestAttributes;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 
-/**
- * Created by sheiks on 20/01/17.
- */
 @Slf4j
-public class CasAuthenticationProvider implements AuthenticationProvider,
-        InitializingBean, MessageSourceAware {
-    // ~ Static fields/initializers
-    // =====================================================================================
+public class CasAuthenticationProvider implements AuthenticationProvider, InitializingBean, MessageSourceAware {
 
+    private static final Log logger = LogFactory.getLog(CasAuthenticationProvider.class);
 
-
-    // ~ Instance fields
-    // ================================================================================================
-    private final UserDetailsChecker userDetailsChecker = new AccountStatusUserDetailsChecker();
-    /**
-     * The Messages.
-     */
-    protected MessageSourceAccessor messages = SpringSecurityMessageSource.getAccessor();
     private AuthenticationUserDetailsService<CasAssertionAuthenticationToken> authenticationUserDetailsService;
+
+    private final UserDetailsChecker userDetailsChecker = new AccountStatusUserDetailsChecker();
+
+    protected MessageSourceAccessor messages = SpringSecurityMessageSource.getAccessor();
+
     private StatelessTicketCache statelessTicketCache = new NullStatelessTicketCache();
+
     private String key;
+
     private TicketValidator ticketValidator;
+
     private ServiceProperties serviceProperties;
+
     private GrantedAuthoritiesMapper authoritiesMapper = new NullAuthoritiesMapper();
 
-    // ~ Methods
-    // ========================================================================================================
     @Override
-    public void afterPropertiesSet() throws Exception {
-        Assert.notNull(this.authenticationUserDetailsService,
-                "An authenticationUserDetailsService must be set");
+    public void afterPropertiesSet() {
+        Assert.notNull(this.authenticationUserDetailsService, "An authenticationUserDetailsService must be set");
         Assert.notNull(this.ticketValidator, "A ticketValidator must be set");
         Assert.notNull(this.statelessTicketCache, "A statelessTicketCache must be set");
-        Assert.hasText(
-                this.key,
+        Assert.hasText(this.key,
                 "A Key is required so CasAuthenticationProvider can identify tokens it previously authenticated");
         Assert.notNull(this.messages, "A message source must be set");
     }
 
-	@Override
-	public Authentication authenticate(Authentication authentication) throws AuthenticationException {
+    @Override
+    public Authentication authenticate(Authentication authentication) throws AuthenticationException {
         if (!supports(authentication.getClass())) {
             return null;
         }
         if (authentication instanceof UsernamePasswordAuthenticationToken
-				&& (!CasAuthenticationFilter.CAS_STATEFUL_IDENTIFIER.equals(authentication.getPrincipal().toString())
-						&& !CasAuthenticationFilter.CAS_STATELESS_IDENTIFIER
+                && (!CasAuthenticationFilter.CAS_STATEFUL_IDENTIFIER.equals(authentication.getPrincipal().toString())
+                && !CasAuthenticationFilter.CAS_STATELESS_IDENTIFIER
                 .equals(authentication.getPrincipal().toString()))) {
             // UsernamePasswordAuthenticationToken not CAS related
             return null;
         }
-
         // If an existing CasAuthenticationToken, just check we created it
         if (authentication instanceof CasAuthenticationToken) {
-            if (this.key.hashCode() == ((CasAuthenticationToken) authentication)
-                    .getKeyHash()) {
-                return authentication;
-            } else {
-                throw new BadCredentialsException(
-                        messages.getMessage("CasAuthenticationProvider.incorrectKey",
-                                "The presented CasAuthenticationToken does not contain the expected key"));
+            if (this.key.hashCode() != ((CasAuthenticationToken) authentication).getKeyHash()) {
+                throw new BadCredentialsException(this.messages.getMessage("CasAuthenticationProvider.incorrectKey",
+                        "The presented CasAuthenticationToken does not contain the expected key"));
             }
+            return authentication;
         }
 
         // Ensure credentials are presented
-        if ((authentication.getCredentials() == null)
-                || "".equals(authentication.getCredentials())) {
-            throw new BadCredentialsException(messages.getMessage(
-                    "CasAuthenticationProvider.noServiceTicket",
+        if ((authentication.getCredentials() == null) || "".equals(authentication.getCredentials())) {
+            throw new BadCredentialsException(this.messages.getMessage("CasAuthenticationProvider.noServiceTicket",
                     "Failed to provide a CAS service ticket to validate"));
         }
 
-        boolean stateless = false;
-
-        if (authentication instanceof UsernamePasswordAuthenticationToken
-                && CasAuthenticationFilter.CAS_STATELESS_IDENTIFIER.equals(authentication
-                .getPrincipal())) {
-            stateless = true;
-        }
-
+        boolean stateless = (authentication instanceof UsernamePasswordAuthenticationToken
+                && CasAuthenticationFilter.CAS_STATELESS_IDENTIFIER.equals(authentication.getPrincipal()));
         CasAuthenticationToken result = null;
 
         if (stateless) {
             // Try to obtain from cache
-            result = statelessTicketCache.getByTicketId(authentication.getCredentials()
-                    .toString());
+            result = this.statelessTicketCache.getByTicketId(authentication.getCredentials().toString());
         }
-
         if (result == null) {
             result = this.authenticateNow(authentication);
             result.setDetails(authentication.getDetails());
         }
-
         if (stateless) {
             // Add to cache
-            statelessTicketCache.putTicketInCache(result);
+            this.statelessTicketCache.putTicketInCache(result);
         }
         log.info("CasAuthenticationProvider.authenticate : result : {}", result);
         log.info("CasAuthenticationProvider.authenticate : result.isAuthenticated() : {}", result.isAuthenticated());
         log.info("CasAuthenticationProvider.authenticate : result.getCredentials() : {}", result.getCredentials().toString());
 
-
-
         return result;
     }
 
-    /**
-     * Authenticate the CAS users. CAS URL will be decided based on the user institution.
-     *
-     * @return CasAuthenticationToken
-     */
-    private CasAuthenticationToken authenticateNow(final Authentication authentication)
-            throws AuthenticationException {
+    private CasAuthenticationToken authenticateNow(final Authentication authentication) throws AuthenticationException {
         try {
-            RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
-            String institution = (String) ((ServletRequestAttributes) requestAttributes).getRequest().getAttribute(ScsbConstants.SCSB_INSTITUTION_CODE);
-
-            String casServerUrl = HelperUtil.getBean(PropertyUtil.class).getPropertyByInstitutionAndKey(institution, PropertyKeyConstants.ILS.ILS_AUTH_SERVICE_PREFIX);
-
-            SCSBCas20ServiceTicketValidator ticketValidator = (SCSBCas20ServiceTicketValidator) this.ticketValidator;
-            ticketValidator.setCasServerUrlPrefix(casServerUrl);
-            ticketValidator.setProxyRetriever(new Cas20ProxyRetriever(casServerUrl, "UTF-8", ticketValidator.getURLConnectionFactory()));
-
-            final Assertion assertion = this.ticketValidator.validate(authentication
-                    .getCredentials().toString(), getServiceUrl(authentication));
-            final UserDetails userDetails = loadUserByAssertion(assertion);
-            userDetailsChecker.check(userDetails);
-            return new CasAuthenticationToken(this.key, userDetails,
-                    authentication.getCredentials(),
-                    authoritiesMapper.mapAuthorities(userDetails.getAuthorities()),
-                    userDetails, assertion);
-        } catch (final TicketValidationException e) {
-            throw new BadCredentialsException(e.getMessage(), e);
+            Assertion assertion = this.ticketValidator.validate(authentication.getCredentials().toString(),
+                    getServiceUrl(authentication));
+            UserDetails userDetails = loadUserByAssertion(assertion);
+            this.userDetailsChecker.check(userDetails);
+            return new CasAuthenticationToken(this.key, userDetails, authentication.getCredentials(),
+                    this.authoritiesMapper.mapAuthorities(userDetails.getAuthorities()), userDetails, assertion);
+        }
+        catch (TicketValidationException ex) {
+            throw new BadCredentialsException(ex.getMessage(), ex);
         }
     }
 
@@ -178,24 +131,20 @@ public class CasAuthenticationProvider implements AuthenticationProvider,
      * {@link ServiceAuthenticationDetails}, then
      * {@link ServiceAuthenticationDetails#getServiceUrl()} is used. Otherwise, the
      * {@link ServiceProperties#getService()} is used.
+     * @param authentication
+     * @return
      */
     private String getServiceUrl(Authentication authentication) {
         String serviceUrl;
         if (authentication.getDetails() instanceof ServiceAuthenticationDetails) {
-            serviceUrl = ((ServiceAuthenticationDetails) authentication.getDetails())
-                    .getServiceUrl();
-        } else if (serviceProperties == null) {
-            throw new IllegalStateException(
-                    "serviceProperties cannot be null unless Authentication.getDetails() implements ServiceAuthenticationDetails.");
-        } else if (serviceProperties.getService() == null) {
-            throw new IllegalStateException(
-                    "serviceProperties.getService() cannot be null unless Authentication.getDetails() implements ServiceAuthenticationDetails.");
-        } else {
-            serviceUrl = serviceProperties.getService();
+            return ((ServiceAuthenticationDetails) authentication.getDetails()).getServiceUrl();
         }
-        if (log.isDebugEnabled()) {
-            log.debug("serviceUrl = " + serviceUrl);
-        }
+        Assert.state(this.serviceProperties != null,
+                "serviceProperties cannot be null unless Authentication.getDetails() implements ServiceAuthenticationDetails.");
+        Assert.state(this.serviceProperties.getService() != null,
+                "serviceProperties.getService() cannot be null unless Authentication.getDetails() implements ServiceAuthenticationDetails.");
+        serviceUrl = this.serviceProperties.getService();
+        logger.debug(LogMessage.format("serviceUrl = %s", serviceUrl));
         return serviceUrl;
     }
 
@@ -203,101 +152,45 @@ public class CasAuthenticationProvider implements AuthenticationProvider,
      * Template method for retrieving the UserDetails based on the assertion. Default is
      * to call configured userDetailsService and pass the username. Deployers can override
      * this method and retrieve the user based on any criteria they desire.
-     *
      * @param assertion The CAS Assertion.
      * @return the UserDetails.
      */
     protected UserDetails loadUserByAssertion(final Assertion assertion) {
-        final CasAssertionAuthenticationToken token = new CasAssertionAuthenticationToken(
-                assertion, "");
+        final CasAssertionAuthenticationToken token = new CasAssertionAuthenticationToken(assertion, "");
         return this.authenticationUserDetailsService.loadUserDetails(token);
     }
 
-    /**
-     * Sets user details service.
-     *
-     * @param userDetailsService the user details service
-     */
     @SuppressWarnings("unchecked")
     /**
      * Sets the UserDetailsService to use. This is a convenience method to invoke
      */
     public void setUserDetailsService(final UserDetailsService userDetailsService) {
-        this.authenticationUserDetailsService = new UserDetailsByNameServiceWrapper(
-                userDetailsService);
+        this.authenticationUserDetailsService = new UserDetailsByNameServiceWrapper(userDetailsService);
     }
 
-    /**
-     * Sets authentication user details service.
-     *
-     * @param authenticationUserDetailsService the authentication user details service
-     */
     public void setAuthenticationUserDetailsService(
             final AuthenticationUserDetailsService<CasAssertionAuthenticationToken> authenticationUserDetailsService) {
         this.authenticationUserDetailsService = authenticationUserDetailsService;
     }
 
-    /**
-     * Sets service properties.
-     *
-     * @param serviceProperties the service properties
-     */
     public void setServiceProperties(final ServiceProperties serviceProperties) {
         this.serviceProperties = serviceProperties;
     }
 
-    /**
-     * Gets key.
-     *
-     * @return the key
-     */
     protected String getKey() {
-        return key;
+        return this.key;
     }
 
-    /**
-     * Sets key.
-     *
-     * @param key the key
-     */
     public void setKey(String key) {
         this.key = key;
     }
 
-    /**
-     * Gets stateless ticket cache.
-     *
-     * @return the stateless ticket cache
-     */
     public StatelessTicketCache getStatelessTicketCache() {
-        return statelessTicketCache;
+        return this.statelessTicketCache;
     }
 
-    /**
-     * Sets stateless ticket cache.
-     *
-     * @param statelessTicketCache the stateless ticket cache
-     */
-    public void setStatelessTicketCache(final StatelessTicketCache statelessTicketCache) {
-        this.statelessTicketCache = statelessTicketCache;
-    }
-
-    /**
-     * Gets ticket validator.
-     *
-     * @return the ticket validator
-     */
     protected TicketValidator getTicketValidator() {
-        return ticketValidator;
-    }
-
-    /**
-     * Sets ticket validator.
-     *
-     * @param ticketValidator the ticket validator
-     */
-    public void setTicketValidator(final TicketValidator ticketValidator) {
-        this.ticketValidator = ticketValidator;
+        return this.ticketValidator;
     }
 
     @Override
@@ -305,22 +198,23 @@ public class CasAuthenticationProvider implements AuthenticationProvider,
         this.messages = new MessageSourceAccessor(messageSource);
     }
 
-    /**
-     * Sets authorities mapper.
-     *
-     * @param authoritiesMapper the authorities mapper
-     */
+    public void setStatelessTicketCache(final StatelessTicketCache statelessTicketCache) {
+        this.statelessTicketCache = statelessTicketCache;
+    }
+
+    public void setTicketValidator(final TicketValidator ticketValidator) {
+        this.ticketValidator = ticketValidator;
+    }
+
     public void setAuthoritiesMapper(GrantedAuthoritiesMapper authoritiesMapper) {
         this.authoritiesMapper = authoritiesMapper;
     }
 
     @Override
     public boolean supports(final Class<?> authentication) {
-        return (UsernamePasswordAuthenticationToken.class
-                .isAssignableFrom(authentication))
+        return (UsernamePasswordAuthenticationToken.class.isAssignableFrom(authentication))
                 || (CasAuthenticationToken.class.isAssignableFrom(authentication))
-                || (CasAssertionAuthenticationToken.class
-                .isAssignableFrom(authentication));
+                || (CasAssertionAuthenticationToken.class.isAssignableFrom(authentication));
     }
-}
 
+}
