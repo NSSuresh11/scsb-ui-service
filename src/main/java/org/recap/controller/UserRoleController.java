@@ -318,10 +318,13 @@ public class UserRoleController extends AbstractController {
     @GetMapping("/userRoles")
     public UserRoleForm userRoles(HttpServletRequest request) {
         HttpSession session = request.getSession(false);
+        log.info(("Inside userRoles >>>>>" + session));
         boolean authenticated = getUserAuthUtil().isAuthenticated(session, ScsbConstants.SCSB_SHIRO_USER_ROLE_URL);
         UserRoleForm userRoleForm = new UserRoleForm();
         if (authenticated) {
+            log.info(("Inside userRoles >>>>>" + authenticated));
             UserDetailsForm userDetailsForm = getUserAuthUtil().getUserDetails(session, ScsbConstants.BARCODE_RESTRICTED_PRIVILEGE);
+            log.info(("Inside userRoles getLoginInstitutionId ()>>>>>" + userDetailsForm.getLoginInstitutionId()));
             userRoleForm = setUserRoleForm(userRoleForm, userDetailsForm);
         }
         userRoleForm.setShowUserSearchView(true);

@@ -76,6 +76,8 @@ public class UserAuthUtil {
      * @return the user details
      */
     public UserDetailsForm getUserDetails(HttpSession session, String recapPermission) {
+        log.info("Inside getUserDetails >>>>>>>>>");
+        log.info("session.getAttribute(ScsbConstants.USER_INSTITUTION) <<<<<<<<<<<<<<<<<<<<<<<<<<<<" + session.getAttribute(ScsbConstants.USER_INSTITUTION));
         UserDetailsForm userDetailsForm = new UserDetailsForm();
         userDetailsForm.setSuperAdmin((Boolean) session.getAttribute(ScsbConstants.SUPER_ADMIN_USER));
         userDetailsForm.setRepositoryUser((Boolean) session.getAttribute(ScsbConstants.REPOSITORY));
